@@ -211,8 +211,6 @@ GameplayScreen::GameplayScreen(QWidget *parent)
 	uiMenuFontBtn.setStyleStrategy(standardFontStyleStrategy);
 	uiMenuFontBtn.setWeight(standardFontWeight);
 
-	// This layout is hardcoded as hell. Possibly worth revisiting.
-	// Hi, future me. You never revisited this, did you?
 	uiMenuGroup.get()->setGeometry(QRect(
 		(screenWidth / 2) - (uiMenuWidth / 2), 
 		(screenHeight / 2) - (uiMenuHeight / 2),
@@ -290,64 +288,6 @@ GameplayScreen::GameplayScreen(QWidget *parent)
 			break;
 		}
 	}
-
-	//uiMenuLayout.get()->addWidget(uiMenuBtnResume.get(), 0, 0, Qt::AlignTop);
-	//uiMenuLayout.get()->addWidget(uiMenuBtnSave.get(), 1, 0, Qt::AlignTop);
-	//uiMenuLayout.get()->addWidget(uiMenuBtnLoad.get(), 2, 0, Qt::AlignTop);
-	//uiMenuLayout.get()->addWidget(uiMenuBtnReset.get(), 3, 0, Qt::AlignTop);
-	//uiMenuLayout.get()->addWidget(uiMenuBtnExit.get(), 4, 0, Qt::AlignTop);
-
-	//uiMenuBtnResume.get()->setFixedSize(QSize(uiMenuBtnWidth, uiMenuBtnHeight));
-	//uiMenuBtnResume.get()->setStyleSheet(styleMap.at("uiMenuBtnStyle"));
-	//uiMenuBtnResume.get()->setFont(uiMenuFontBtn);
-	//uiMenuBtnResume.get()->setText("RESUME");
-
-	//uiMenuBtnSave.get()->setFixedSize(QSize(uiMenuBtnWidth, uiMenuBtnHeight));
-	//uiMenuBtnSave.get()->setStyleSheet(styleMap.at("uiMenuBtnStyle"));
-	//uiMenuBtnSave.get()->setFont(uiMenuFontBtn);
-	//uiMenuBtnSave.get()->setText("SAVE");
-
-	//uiMenuBtnLoad.get()->setFixedSize(QSize(uiMenuBtnWidth, uiMenuBtnHeight));
-	//uiMenuBtnLoad.get()->setStyleSheet(styleMap.at("uiMenuBtnStyle"));
-	//uiMenuBtnLoad.get()->setFont(uiMenuFontBtn);
-	//uiMenuBtnLoad.get()->setText("LOAD");
-
-	//uiMenuBtnReset.get()->setFixedSize(QSize(uiMenuBtnWidth, uiMenuBtnHeight));
-	//uiMenuBtnReset.get()->setStyleSheet(styleMap.at("uiMenuBtnStyle"));
-	//uiMenuBtnReset.get()->setFont(uiMenuFontBtn);
-	//uiMenuBtnReset.get()->setText("RESET LEVEL");
-
-	//uiMenuBtnExit.get()->setFixedSize(QSize(uiMenuBtnWidth, uiMenuBtnHeight));
-	//uiMenuBtnExit.get()->setStyleSheet(styleMap.at("uiMenuBtnStyle"));
-	//uiMenuBtnExit.get()->setFont(uiMenuFontBtn);
-	//uiMenuBtnExit.get()->setText("EXIT GAME");
-
-	/*connect(uiMenuBtnMap.at(UiMenuBtnType::RESUME).uiButton.get(), &QPushButton::clicked, this, &GameplayScreen::uiMenuBtnClickResume);
-
-	connect(uiMenuBtnSave.get(), &QPushButton::clicked, this, [=]() {
-	});
-
-	connect(uiMenuBtnLoad.get(), &QPushButton::clicked, this, [=]() {
-	});
-
-	connect(uiMenuBtnReset.get(), &QPushButton::clicked, this, [=]() {
-		if (gameState == GameState::PAUSED)
-		{
-			uiMenuResumePlay();
-			levelSetToDefaults(levelsAll[levelCurrent]);
-			uiGameplaySetToDefaults();
-			uiGameplayGroup->setVisible(true);
-			gameState = GameState::PLAYING;
-			turnOwner = TurnOwner::PLAYER;
-		}
-	});
-
-	connect(uiMenuBtnExit.get(), &QPushButton::clicked, this, [=]() {
-		if (gameState == GameState::PAUSED)
-		{
-			this->parentWidget()->parentWidget()->close();
-		}
-	});*/
 
 	uiMenuGroup.get()->setVisible(false);
 
@@ -909,6 +849,8 @@ void GameplayScreen::keyReleaseEvent(QKeyEvent *event)
 				newKeybind == keybindNextLevel ||
 				newKeybind == keybindResetLevel)
 			{
+				// Logic here is a bit redundant. Could maybe be improved.
+
 				QMessageBox qMsg(this->parentWidget());
 				qMsg.setStyleSheet(styleMap.at("uiMessageBoxStyle"));
 				qMsg.setWindowTitle("Keybind In Use");
@@ -939,21 +881,6 @@ void GameplayScreen::keyReleaseEvent(QKeyEvent *event)
 					qMsg.exec();
 					return;
 				}
-
-				/*QMessageBox qMsg(this->parentWidget());
-				qMsg.setStyleSheet(styleMap.at("uiMessageBoxStyle"));
-				qMsg.setWindowTitle("Keybind In Use");
-				qMsg.setText("That key is already bound to a command.");
-				qMsg.setStandardButtons(QMessageBox::Ok);
-				qMsg.setDefaultButton(QMessageBox::Ok);
-				qMsg.setFont(uiGameplayFontTextBox);
-				qMsg.button(QMessageBox::Ok)->setFont(uiGameplayFontTextBox);
-				qMsg.exec();*/
-
-				/*QMessageBox::information(this->parentWidget(),
-					tr("Keybind In Use"),
-					tr("That key is already bound to a command.")
-				);*/
 			}
 			else if (newKeybind == Qt::Key_Control || newKeybind == Qt::Key_Shift)
 			{
@@ -966,11 +893,6 @@ void GameplayScreen::keyReleaseEvent(QKeyEvent *event)
 				qMsg.setFont(uiGameplayFontTextBox);
 				qMsg.button(QMessageBox::Ok)->setFont(uiGameplayFontTextBox);
 				qMsg.exec();
-
-				/*QMessageBox::information(this->parentWidget(),
-					tr("Keybind Invalid"),
-					tr("Ctrl and Shift are not valid key input.")
-				);*/
 			}
 			else
 			{
@@ -2255,15 +2177,6 @@ void GameplayScreen::uiMenuBtnClickSave()
 	{
 		// Id is important here. We use unique Id in save/load process,
 		// to ensure that we're loading in the correct level with the right amount of progress.
-		// Note: Should probably make it so saving only saves progress in current level.
-		// and can Load you into current level, if it exists in the level list.
-
-		// actually, we might be able to save progress on all levels in the list.
-		// give them a state that can be set to "COMPLETE" or "INCOMPLETE" or "INPROGRESS"
-		// Save file will have a list of levels that are marked "COMPLETE"
-		// if those levels exist in the loaded list, they will get their state changed to COMPLETE
-		// there should only be one that is INPROGRESS, that will be what is set to the current level on load
-		// if it exists in the loaded list
 
 		QString proposedSaveName;
 		proposedSaveName += fileDirLastSaved + "/";
@@ -2278,16 +2191,6 @@ void GameplayScreen::uiMenuBtnClickSave()
 			if (fileWrite.open(QIODevice::WriteOnly))
 			{
 				QTextStream qStream(&fileWrite);
-
-				// need to store state of immobile objects
-				// store keys # held
-				// store traps # held (and which ones are held)
-				//	- maybe I can simplify the logic here, make a "HELD" state for traps
-				//	in this way, if the state is HELD, I know player has it?
-				// idk, we'll see...
-				// could make HELD state for keys too maybe...
-				// not sure this HELD logic is actually necessary...
-
 				qStream <<
 					"::"
 					"Id=" + levelsAll[levelCurrent].id +
@@ -2702,11 +2605,6 @@ void GameplayScreen::uiMenuBtnClickLoad()
 				qMsg.setFont(uiGameplayFontTextBox);
 				qMsg.button(QMessageBox::Ok)->setFont(uiGameplayFontTextBox);
 				qMsg.exec();
-
-				/*QMessageBox::information(this->parentWidget(),
-					tr("Level Not Found"),
-					tr("Saved level ID was not found in loaded levels.\r\nSave file only saves references to existing levels, so if they are moved or deleted, loading may fail.")
-				);*/
 			}
 		}
 	}
@@ -3043,38 +2941,6 @@ void GameplayScreen::modLoadThemeIfExists()
 			{
 				uiMenuFontBtn_fontPointSize = extractSubstringInbetweenQt("::uiMenuFontBtn_fontPointSize=", "::", line).toInt();
 			}
-			//else if (line.contains("::baseStyle="))
-			//{
-			//	baseStyle = extractSubstringInbetweenQt("::baseStyle=", "::", line);
-			//}
-			//else if (line.contains("::::uiGameplayGroupBoxStyle="))
-			//{
-			//	uiGameplayGroupBoxStyle = extractSubstringInbetweenQt("::uiGameplayGroupBoxStyle=", "::::", line);
-			//}
-			//else if (line.contains("::uiGameplayTextBoxStyle="))
-			//{
-			//	uiGameplayTextBoxStyle = extractSubstringInbetweenQt("::uiGameplayTextBoxStyle=", "::", line);
-			//}
-			//else if (line.contains("::uiGameplayLabelStyle="))
-			//{
-			//	uiGameplayLabelStyle = extractSubstringInbetweenQt("::uiGameplayLabelStyle=", "::", line);
-			//}
-			//else if (line.contains("::uiGameplayKeymapBtnStyle="))
-			//{
-			//	uiGameplayKeymapBtnStyle = extractSubstringInbetweenQt("::uiGameplayKeymapBtnStyle=", "::", line);
-			//}
-			//else if (line.contains("::uiGameplayKeymapModifBtnStyle="))
-			//{
-			//	uiGameplayKeymapModifBtnStyle = extractSubstringInbetweenQt("::uiGameplayKeymapModifBtnStyle=", "::", line);
-			//}
-			//else if (line.contains("::uiMenuGroupBoxStyle="))
-			//{
-			//	uiMenuGroupBoxStyle = extractSubstringInbetweenQt("::uiMenuGroupBoxStyle=", "::", line).arg(appExecutablePath);
-			//}
-			//else if (line.contains("::uiMenuBtnStyle="))
-			//{
-			//	uiMenuBtnStyle = extractSubstringInbetweenQt("::uiMenuBtnStyle=", "::", line);
-			//}
 
 			// Due to the possibility of a stylesheet having :: as an actual part of its syntax, 
 			// we use :::: as the front/back identifer instead.
@@ -3104,143 +2970,6 @@ void GameplayScreen::modLoadThemeIfExists()
 					continue;
 				}
 			}
-
-			//else if (line.contains("::imgImmobileKey="))
-			//{
-			//	imgImmobileKey = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgImmobileKey=", "::", line));
-			//}
-			//else if (line.contains("::imgImmobileGate="))
-			//{
-			//	imgImmobileGate = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgImmobileGate=", "::", line));
-			//}
-			//else if (line.contains("::imgImmobileBlock="))
-			//{
-			//	imgImmobileBlock = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgImmobileBlock=", "::", line));
-			//}
-			//else if (line.contains("::imgImmobileHazard="))
-			//{
-			//	imgImmobileHazard = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgImmobileHazard=", "::", line));
-			//}
-			//else if (line.contains("::imgPlayerNeutral="))
-			//{
-			//	imgPlayerNeutral = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgPlayerNeutral=", "::", line));
-			//}
-			//else if (line.contains("::imgPlayerLeft="))
-			//{
-			//	imgPlayerLeft = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgPlayerLeft=", "::", line));
-			//}
-			//else if (line.contains("::imgPlayerRight="))
-			//{
-			//	imgPlayerRight = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgPlayerRight=", "::", line));
-			//}
-			//else if (line.contains("::imgPlayerUp="))
-			//{
-			//	imgPlayerUp = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgPlayerUp=", "::", line));
-			//}
-			//else if (line.contains("::imgPlayerDown="))
-			//{
-			//	imgPlayerDown = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgPlayerDown=", "::", line));
-			//}
-			//else if (line.contains("::imgPatrollerPusherLeft="))
-			//{
-			//	imgPatrollerPusherLeft = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgPatrollerPusherLeft=", "::", line));
-			//}
-			//else if (line.contains("::imgPatrollerPusherRight="))
-			//{
-			//	imgPatrollerPusherRight = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgPatrollerPusherRight=", "::", line));
-			//}
-			//else if (line.contains("::imgPatrollerPusherUp="))
-			//{
-			//	imgPatrollerPusherUp = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgPatrollerPusherUp=", "::", line));
-			//}
-			//else if (line.contains("::imgPatrollerPusherDown="))
-			//{
-			//	imgPatrollerPusherDown = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgPatrollerPusherDown=", "::", line));
-			//}
-			//else if (line.contains("::imgPatrollerSuckerLeft="))
-			//{
-			//	imgPatrollerSuckerLeft = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgPatrollerSuckerLeft=", "::", line));
-			//}
-			//else if (line.contains("::imgPatrollerSuckerRight="))
-			//{
-			//	imgPatrollerSuckerRight = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgPatrollerSuckerRight=", "::", line));
-			//}
-			//else if (line.contains("::imgPatrollerSuckerUp="))
-			//{
-			//	imgPatrollerSuckerUp = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgPatrollerSuckerUp=", "::", line));
-			//}
-			//else if (line.contains("::imgPatrollerSuckerDown="))
-			//{
-			//	imgPatrollerSuckerDown = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgPatrollerSuckerDown=", "::", line));
-			//}
-			//else if (line.contains("::imgUtilPusherInactive="))
-			//{
-			//	imgUtilPusherInactive = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgUtilPusherInactive=", "::", line));
-			//}
-			//else if (line.contains("::imgUtilPusherActive="))
-			//{
-			//	imgUtilPusherActive = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgUtilPusherActive=", "::", line));
-			//}
-			//else if (line.contains("::imgUtilSuckerInactive="))
-			//{
-			//	imgUtilSuckerInactive = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgUtilSuckerInactive=", "::", line));
-			//}
-			//else if (line.contains("::imgUtilSuckerActive="))
-			//{
-			//	imgUtilSuckerActive = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgUtilSuckerActive=", "::", line));
-			//}
-			//else if (line.contains("::imgGridCornerUpL="))
-			//{
-			//	imgGridCornerUpL = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgGridCornerUpL=", "::", line));
-			//}
-			//else if (line.contains("::imgGridCornerUpR="))
-			//{
-			//	imgGridCornerUpR = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgGridCornerUpR=", "::", line));
-			//}
-			//else if (line.contains("::imgGridCornerDownL="))
-			//{
-			//	imgGridCornerDownL = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgGridCornerDownL=", "::", line));
-			//}
-			//else if (line.contains("::imgGridCornerDownR="))
-			//{
-			//	imgGridCornerDownR = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgGridCornerDownR=", "::", line));
-			//}
-			//else if (line.contains("::imgGridInner="))
-			//{
-			//	imgGridInner = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgGridInner=", "::", line));
-			//}
-			//else if (line.contains("::imgGridEdgeUpX="))
-			//{
-			//	imgGridEdgeUpX = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgGridEdgeUpX=", "::", line));
-			//}
-			//else if (line.contains("::imgGridEdgeDownX="))
-			//{
-			//	imgGridEdgeDownX = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgGridEdgeDownX=", "::", line));
-			//}
-			//else if (line.contains("::imgGridEdgeLeftY="))
-			//{
-			//	imgGridEdgeLeftY = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgGridEdgeLeftY=", "::", line));
-			//}
-			//else if (line.contains("::imgGridEdgeRightY="))
-			//{
-			//	imgGridEdgeRightY = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgGridEdgeRightY=", "::", line));
-			//}
-			//else if (line.contains("::imgSplashTitle="))
-			//{
-			//	imgSplashTitle = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgSplashTitle=", "::", line));
-			//}
-			//else if (line.contains("::imgSplashLevelComplete="))
-			//{
-			//	imgSplashLevelComplete = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgSplashLevelComplete=", "::", line));
-			//}
-			//else if (line.contains("::imgSplashLevelFailed="))
-			//{
-			//	imgSplashLevelFailed = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgSplashLevelFailed=", "::", line));
-			//}
-			//else if (line.contains("::imgSplashLevelAllDone="))
-			//{
-			//	imgSplashLevelAllDone = QPixmap(appExecutablePath + extractSubstringInbetweenQt("::imgSplashLevelAllDone=", "::", line));
-			//}
 		}
 		fileRead.close();
 	}

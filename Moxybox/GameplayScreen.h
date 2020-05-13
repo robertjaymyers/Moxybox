@@ -46,7 +46,6 @@ private:
 
 	const QString winTitleProgramName = "Moxybox";
 
-	//QString baseStyle = "border: 0px; background-color: #000000;";
 	QString standardFontFamily = "Pixellari";
 	QFont::StyleStrategy standardFontStyleStrategy = QFont::NoAntialias;
 	QFont::Weight standardFontWeight = QFont::Normal;
@@ -201,42 +200,6 @@ private:
 	// Reason: This is done to simplify the data storing/loading process for levels and keep it the same for all types of data.
 	// It also leaves less obstacles to changing players to have more than one in the future, if desired.
 	int pIndex = 0;
-
-	//// Unlike other images used in the program, "invisible" and "error" do not have a thematic purpose.
-	//// Meaning, there is no expectation of, or point to, them being changed as part of a mod theme.
-	//// So we make them const, unlike the rest of the images.
-	//const QPixmap imgInvisible = QPixmap(":/Moxybox/Resources/invisible.png");
-	//const QPixmap imgError = QPixmap(":/Moxybox/Resources/error.png");
-
-	//QPixmap imgImmobileKey = QPixmap(":/Moxybox/Resources/tokenImmobileKey.png");
-	//QPixmap imgImmobileGate = QPixmap(":/Moxybox/Resources/tokenImmobileGate.png");
-	//QPixmap imgImmobileBlock = QPixmap(":/Moxybox/Resources/tokenImmobileBlock.png");
-	//QPixmap imgImmobileHazard = QPixmap(":/Moxybox/Resources/tokenImmobileHazard.png");
-
-	//// By default, player token uses the same image (under different names), no matter what its "facing" direction is.
-	//// But we support a different image based on facing orientation regardless, to account for if
-	//// a mod theme wants to use a player token that has different images for its facing direction.
-	//// We include a neutral facing direction too. This is the direction player always starts in
-	//// and the direction it changes to when deploying a utility item, rather than moving.
-	//QPixmap imgPlayerNeutral = QPixmap(":/Moxybox/Resources/tokenPlayerNeutral.png");
-	//QPixmap imgPlayerLeft = QPixmap(":/Moxybox/Resources/tokenPlayerLeft.png");
-	//QPixmap imgPlayerRight = QPixmap(":/Moxybox/Resources/tokenPlayerRight.png");
-	//QPixmap imgPlayerUp = QPixmap(":/Moxybox/Resources/tokenPlayerUp.png");
-	//QPixmap imgPlayerDown = QPixmap(":/Moxybox/Resources/tokenPlayerDown.png");
-
-	//QPixmap imgPatrollerPusherLeft = QPixmap(":/Moxybox/Resources/tokenPatrollerPusherLeft.png");
-	//QPixmap imgPatrollerPusherRight = QPixmap(":/Moxybox/Resources/tokenPatrollerPusherRight.png");
-	//QPixmap imgPatrollerPusherUp = QPixmap(":/Moxybox/Resources/tokenPatrollerPusherUp.png");
-	//QPixmap imgPatrollerPusherDown = QPixmap(":/Moxybox/Resources/tokenPatrollerPusherDown.png");
-	//QPixmap imgPatrollerSuckerLeft = QPixmap(":/Moxybox/Resources/tokenPatrollerSuckerLeft.png");
-	//QPixmap imgPatrollerSuckerRight = QPixmap(":/Moxybox/Resources/tokenPatrollerSuckerRight.png");
-	//QPixmap imgPatrollerSuckerUp = QPixmap(":/Moxybox/Resources/tokenPatrollerSuckerUp.png");
-	//QPixmap imgPatrollerSuckerDown = QPixmap(":/Moxybox/Resources/tokenPatrollerSuckerDown.png");
-
-	//QPixmap imgUtilPusherInactive = QPixmap(":/Moxybox/Resources/tokenUtilPusherInactive.png");
-	//QPixmap imgUtilPusherActive = QPixmap(":/Moxybox/Resources/tokenUtilPusherActive.png");
-	//QPixmap imgUtilSuckerInactive = QPixmap(":/Moxybox/Resources/tokenUtilSuckerInactive.png");
-	//QPixmap imgUtilSuckerActive = QPixmap(":/Moxybox/Resources/tokenUtilSuckerActive.png");
 
 	// Z value for mobile tokens should be higher than that of grid pieces to be atop them.
 	// And higher than that of immobile tokens (ex: player would be atop utility token).
@@ -526,16 +489,6 @@ private:
 	const int screenWidth = 800;
 	const int screenHeight = 600;
 
-	/*QPixmap imgGridCornerUpL = QPixmap(":/Moxybox/Resources/gridTextureCornerUpL.png");
-	QPixmap imgGridCornerUpR = QPixmap(":/Moxybox/Resources/gridTextureCornerUpR.png");
-	QPixmap imgGridCornerDownL = QPixmap(":/Moxybox/Resources/gridTextureCornerDownL.png");
-	QPixmap imgGridCornerDownR = QPixmap(":/Moxybox/Resources/gridTextureCornerDownR.png");
-	QPixmap imgGridInner = QPixmap(":/Moxybox/Resources/gridTextureInner.png");
-	QPixmap imgGridEdgeUpX = QPixmap(":/Moxybox/Resources/gridTextureEdgeUpX.png");
-	QPixmap imgGridEdgeDownX = QPixmap(":/Moxybox/Resources/gridTextureEdgeDownX.png");
-	QPixmap imgGridEdgeLeftY = QPixmap(":/Moxybox/Resources/gridTextureEdgeLeftY.png");
-	QPixmap imgGridEdgeRightY = QPixmap(":/Moxybox/Resources/gridTextureEdgeRightY.png");*/
-
 	// ------------
 	// LEVEL DATA
 	// ------------
@@ -570,10 +523,6 @@ private:
 	// --------------
 	const int splashZ = 10; // Should have a higher Z value than other things to make sure splash screen shows.
 	std::unique_ptr<QGraphicsPixmapItem> splashItem = std::make_unique<QGraphicsPixmapItem>(nullptr);
-	/*QPixmap imgSplashTitle = QPixmap(":/Moxybox/Resources/splashTitle.png");
-	QPixmap imgSplashLevelComplete = QPixmap(":/Moxybox/Resources/splashLevelComplete.png");
-	QPixmap imgSplashLevelFailed = QPixmap(":/Moxybox/Resources/splashLevelFailed.png");
-	QPixmap imgSplashLevelAllDone = QPixmap(":/Moxybox/Resources/splashVictoryOverAll.png");*/
 
 	// -------------
 	// UI GAMEPLAY
@@ -640,33 +589,7 @@ private:
 	const QString uiGameplayKeymapGroupTitleDefault = "Keybinds";
 	const QString uiGameplayKeymapGroupTitleKeybinding = "Hit Key to Set";
 
-	/*QString uiGameplayGroupBoxStyle =
-	{
-		"QGroupBox { border-width: 1px;  border-style: solid;  border-color: #8E7320; background-color: #674003; }"
-		"QGroupBox::title { border-width: 1px;  border-top-width: 0px;  border-style: solid;  border-color: #191405;  background-color: #8D9E45;  color: #191405;  subcontrol-origin: margin;  left: 5px; }"
-	};*/
-
 	const int minBoxWidth = (screenWidth / 4) - 6;
-
-	/*QString uiGameplayTextBoxStyle =
-	{
-		"QTextEdit { border: 0px;  background-color: #674003;  color: #C4BB81; }"
-	};
-
-	QString uiGameplayLabelStyle =
-	{
-		"QLabel { border: 0px;  background-color: #674003;  color: #C4BB81; }"
-	};
-
-	QString uiGameplayKeymapBtnStyle =
-	{
-		"QPushButton { border-width: 1px;  border-style: solid;  border-color: #674003;  background-color: #674003;  color: #C4BB81; }"
-	};
-
-	QString uiGameplayKeymapModifBtnStyle =
-	{
-		"QPushButton { border-width: 1px;  border-style: solid;  border-color: #191405;  background-color: #8D9E45;  color: #191405; }"
-	};*/
 
 	const QString uiGameplayMessagesObstacle = "Need force of impact to get past obstacles.";
 	const QString uiGameplayMessagesHazard = "Need knockback impact to cross hazards. Careful! If you land on it, you have to start the level over.";
@@ -692,11 +615,6 @@ private:
 
 	std::unique_ptr<QGroupBox> uiMenuGroup = std::make_unique<QGroupBox>(this);
 	std::unique_ptr<QGridLayout> uiMenuLayout = std::make_unique<QGridLayout>();
-	//std::unique_ptr<QPushButton> uiMenuBtnResume = std::make_unique<QPushButton>();
-	//std::unique_ptr<QPushButton> uiMenuBtnSave = std::make_unique<QPushButton>();
-	//std::unique_ptr<QPushButton> uiMenuBtnLoad = std::make_unique<QPushButton>();
-	//std::unique_ptr<QPushButton> uiMenuBtnReset = std::make_unique<QPushButton>();
-	//std::unique_ptr<QPushButton> uiMenuBtnExit = std::make_unique<QPushButton>();
 
 	enum class UiMenuBtnType
 	{
@@ -715,16 +633,6 @@ private:
 		std::unique_ptr<QPushButton> widget = std::make_unique<QPushButton>();
 	};
 	std::map<UiMenuBtnType, uiMenuBtnComponent> uiMenuBtnMap;
-
-	/*QString uiMenuGroupBoxStyle =
-	{
-		"QGroupBox { background-image: url(:/Moxybox/Resources/uiMenuBtsBg.png); }"
-	};
-
-	QString uiMenuBtnStyle =
-	{
-		"QPushButton { background-color: rgba(255, 255, 255, 0);  border: none;  color: #C4BB81;  image: url(:/Moxybox/Resources/invisible.png); }"
-	};*/
 
 	// -----------
 	// FUNCTIONS
