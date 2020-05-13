@@ -1,0 +1,42 @@
+<RCC>
+    <qresource prefix="/Moxybox">
+        <file>Resources/error.png</file>
+        <file>Resources/gridTextureCornerDownL.png</file>
+        <file>Resources/gridTextureCornerDownR.png</file>
+        <file>Resources/gridTextureCornerUpL.png</file>
+        <file>Resources/gridTextureCornerUpR.png</file>
+        <file>Resources/gridTextureEdgeDownX.png</file>
+        <file>Resources/gridTextureEdgeLeftY.png</file>
+        <file>Resources/gridTextureEdgeRightY.png</file>
+        <file>Resources/gridTextureEdgeUpX.png</file>
+        <file>Resources/gridTextureInner.png</file>
+        <file>Resources/invisible.png</file>
+        <file>Resources/splashLevelComplete.png</file>
+        <file>Resources/splashLevelFailed.png</file>
+        <file>Resources/splashTitle.png</file>
+        <file>Resources/splashVictoryOverAll.png</file>
+        <file>Resources/tokenImmobileBlock.png</file>
+        <file>Resources/tokenImmobileGate.png</file>
+        <file>Resources/tokenImmobileHazard.png</file>
+        <file>Resources/tokenImmobileKey.png</file>
+        <file>Resources/tokenPatrollerPusherDown.png</file>
+        <file>Resources/tokenPatrollerPusherLeft.png</file>
+        <file>Resources/tokenPatrollerPusherRight.png</file>
+        <file>Resources/tokenPatrollerPusherUp.png</file>
+        <file>Resources/tokenPatrollerSuckerDown.png</file>
+        <file>Resources/tokenPatrollerSuckerLeft.png</file>
+        <file>Resources/tokenPatrollerSuckerRight.png</file>
+        <file>Resources/tokenPatrollerSuckerUp.png</file>
+        <file>Resources/tokenUtilPusherActive.png</file>
+        <file>Resources/tokenUtilPusherInactive.png</file>
+        <file>Resources/tokenUtilSuckerActive.png</file>
+        <file>Resources/tokenUtilSuckerInactive.png</file>
+        <file>Resources/uiMenuBtsBg.png</file>
+        <file>Icon/moxybox_program_icon.ico</file>
+        <file>Resources/tokenPlayerDown.png</file>
+        <file>Resources/tokenPlayerLeft.png</file>
+        <file>Resources/tokenPlayerRight.png</file>
+        <file>Resources/tokenPlayerUp.png</file>
+        <file>Resources/tokenPlayerNeutral.png</file>
+    </qresource>
+</RCC>
