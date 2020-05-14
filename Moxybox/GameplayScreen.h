@@ -46,13 +46,6 @@ private:
 
 	const QString winTitleProgramName = "Moxybox";
 
-	QString standardFontFamily = "Pixellari";
-	QFont::StyleStrategy standardFontStyleStrategy = QFont::NoAntialias;
-	QFont::Weight standardFontWeight = QFont::Normal;
-	int uiGameplayFontGroupTitle_fontPointSize = 12;
-	int uiGameplayFontTextBox_fontPointSize = 12;
-	int uiMenuFontBtn_fontPointSize = 14;
-
 	enum class GameState { TITLE, PLAYING, PAUSED, KEYBINDING, LEVEL_COMPLETE, LEVEL_FAILED, LEVEL_ALL_DONE };
 	GameState gameState = GameState::TITLE;
 
@@ -63,6 +56,15 @@ private:
 	// Once the first level is ready, turn ownership should be set to Player, so they can begin the game.
 	enum class TurnOwner { NONE, PLAYER, PATROLLER };
 	TurnOwner turnOwner = TurnOwner::NONE;
+
+	// These are the miscellaneous theme files where putting them in a map would be overkill.
+	// Other theme files are below in image and style maps.
+	QString standardFontFamily = "Pixellari";
+	QFont::StyleStrategy standardFontStyleStrategy = QFont::NoAntialias;
+	QFont::Weight standardFontWeight = QFont::Normal;
+	int uiGameplayFontGroupTitle_fontPointSize = 12;
+	int uiGameplayFontTextBox_fontPointSize = 12;
+	int uiMenuFontBtn_fontPointSize = 14;
 
 	// Using maps for images and style with string keys allows us to greatly simplify and standardize the logic
 	// for setting them initially and in relation to themes. We can use the string key as the variable reference

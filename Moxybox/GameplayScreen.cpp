@@ -1825,6 +1825,7 @@ void GameplayScreen::suckInRange()
 					// move player one to the RIGHT
 					pItem->setPos(pItem->x() + pAtIndex.movementSpeed * gridPieceSize, pItem->y());
 					suckInHitCheck();
+					hazardHitCheck();
 					return;
 				}
 			}
@@ -1836,6 +1837,7 @@ void GameplayScreen::suckInRange()
 					// move player one to the LEFT
 					pItem->setPos(pItem->x() - pAtIndex.movementSpeed * gridPieceSize, pItem->y());
 					suckInHitCheck();
+					hazardHitCheck();
 					return;
 				}
 			}
@@ -1850,6 +1852,7 @@ void GameplayScreen::suckInRange()
 					// move player one DOWN
 					pItem->setPos(pItem->x(), pItem->y() + pAtIndex.movementSpeed * gridPieceSize);
 					suckInHitCheck();
+					hazardHitCheck();
 					return;
 				}
 			}
@@ -1861,6 +1864,7 @@ void GameplayScreen::suckInRange()
 					// move player one UP
 					pItem->setPos(pItem->x(), pItem->y() - pAtIndex.movementSpeed * gridPieceSize);
 					suckInHitCheck();
+					hazardHitCheck();
 					return;
 				}
 			}
