@@ -1,8 +1,5 @@
 #include "GameplayScreen.h"
 
-// Possibly see if there's a neat way to tell user what is using a keybind if it's already in use,
-// when modifying.
-
 // !important: Need to build an installer that can install Pixellari font. 
 // Otherwise, people using the program won't have it...
 
@@ -608,6 +605,24 @@ GameplayScreen::GameplayScreen(QWidget *parent)
 						);
 					}
 				}
+				else if (line.contains("::Teleport="))
+				{
+					QString teleportData = extractSubstringInbetweenQt("::Teleport=", "::", line);
+					QStringList teleportList = extractSubstringInbetweenQtLoopList("(", ")", teleportData);
+					for (const auto& teleport : teleportList)
+					{
+						QStringList coords = teleport.split(",", QString::SkipEmptyParts);
+						newLevelData.teleports.emplace_back
+						(
+							tokenImmobile
+							{
+								coords[0].toInt(),
+								coords[1].toInt(),
+								tokenImmobile::Type::TELEPORT
+							}
+						);
+					}
+				}
 			}
 
 			if (validLevelFound)
@@ -715,6 +730,7 @@ void GameplayScreen::keyReleaseEvent(QKeyEvent *event)
 						);
 						levelsAll[levelCurrent].turnsRemaining--;
 						uiGameplayUpdateStatCounterTurns();
+						teleportHitCheck();
 						turnOwner = TurnOwner::PATROLLER;
 					}
 
@@ -1063,6 +1079,11 @@ bool GameplayScreen::hitSolidObjectPlayerMoving()
 		uiGameplayMessagesTextBox.get()->setText(uiGameplayMessagesHazard);
 		return true;
 	}
+	else if (hitImmobileObject(levelsAll[levelCurrent].teleports, nextY, nextX))
+	{
+		uiGameplayMessagesTextBox.get()->setText(uiGameplayMessagesTeleport);
+		return false;
+	}
 	else if (hitEnemy(levelsAll[levelCurrent].suckers, nextY, nextX))
 	{
 		return true;
@@ -1074,6 +1095,7 @@ bool GameplayScreen::hitSolidObjectPlayerMoving()
 			knockbackPlayerMoving();
 		}
 		hazardHitCheck();
+		teleportHitCheck();
 		turnOwner = TurnOwner::PATROLLER;
 		return true;
 	}
@@ -1354,6 +1376,7 @@ void GameplayScreen::updatePositionPatrollerMoves(std::vector<tokenPatroller>& p
 								knockbackEnemyMoving(enemyNum);
 							}
 							hazardHitCheck();
+							teleportHitCheck();
 						}
 					}
 				}
@@ -1393,6 +1416,7 @@ void GameplayScreen::updatePositionPatrollerMoves(std::vector<tokenPatroller>& p
 								knockbackEnemyMoving(enemyNum);
 							}
 							hazardHitCheck();
+							teleportHitCheck();
 						}
 					}
 				}
@@ -1439,6 +1463,7 @@ void GameplayScreen::updatePositionPatrollerMoves(std::vector<tokenPatroller>& p
 								knockbackEnemyMoving(enemyNum);
 							}
 							hazardHitCheck();
+							teleportHitCheck();
 						}
 					}
 				}
@@ -1478,6 +1503,7 @@ void GameplayScreen::updatePositionPatrollerMoves(std::vector<tokenPatroller>& p
 								knockbackEnemyMoving(enemyNum);
 							}
 							hazardHitCheck();
+							teleportHitCheck();
 						}
 					}
 				}
@@ -1826,6 +1852,7 @@ void GameplayScreen::suckInRange()
 					pItem->setPos(pItem->x() + pAtIndex.movementSpeed * gridPieceSize, pItem->y());
 					suckInHitCheck();
 					hazardHitCheck();
+					teleportHitCheck();
 					return;
 				}
 			}
@@ -1838,6 +1865,7 @@ void GameplayScreen::suckInRange()
 					pItem->setPos(pItem->x() - pAtIndex.movementSpeed * gridPieceSize, pItem->y());
 					suckInHitCheck();
 					hazardHitCheck();
+					teleportHitCheck();
 					return;
 				}
 			}
@@ -1853,6 +1881,7 @@ void GameplayScreen::suckInRange()
 					pItem->setPos(pItem->x(), pItem->y() + pAtIndex.movementSpeed * gridPieceSize);
 					suckInHitCheck();
 					hazardHitCheck();
+					teleportHitCheck();
 					return;
 				}
 			}
@@ -1865,6 +1894,7 @@ void GameplayScreen::suckInRange()
 					pItem->setPos(pItem->x(), pItem->y() - pAtIndex.movementSpeed * gridPieceSize);
 					suckInHitCheck();
 					hazardHitCheck();
+					teleportHitCheck();
 					return;
 				}
 			}
@@ -1884,6 +1914,39 @@ void GameplayScreen::hazardHitCheck()
 			levelsAll[levelCurrent].players[pIndex].item.get()->y() == hazard.item.get()->y())
 		{
 			levelsAll[levelCurrent].turnsRemaining = 0;
+			return;
+		}
+	}
+}
+
+void GameplayScreen::teleportHitCheck()
+{
+	// There should only ever be two teleports on the grid.
+	// With this expected, when player lands on a teleport square,
+	// we can move player to whichever teleport square they are NOT on.
+	// This enables the possibility in design of getting the player across the board a little faster,
+	// rather than always having to walk long distances.
+	for (int i = 0; i < levelsAll[levelCurrent].teleports.size(); i++)
+	{
+		if (levelsAll[levelCurrent].players[pIndex].item.get()->x() == levelsAll[levelCurrent].teleports[i].item.get()->x() &&
+			levelsAll[levelCurrent].players[pIndex].item.get()->y() == levelsAll[levelCurrent].teleports[i].item.get()->y())
+		{
+			if (i == 0)
+			{
+				levelsAll[levelCurrent].players[pIndex].item.get()->setPos
+				(
+					levelsAll[levelCurrent].teleports[i + 1].item.get()->x(),
+					levelsAll[levelCurrent].teleports[i + 1].item.get()->y()
+				);
+			}
+			else if (i == 1)
+			{
+				levelsAll[levelCurrent].players[pIndex].item.get()->setPos
+				(
+					levelsAll[levelCurrent].teleports[i - 1].item.get()->x(),
+					levelsAll[levelCurrent].teleports[i - 1].item.get()->y()
+				);
+			}
 			return;
 		}
 	}
@@ -1998,6 +2061,18 @@ void GameplayScreen::levelSetToDefaults(levelData& level)
 		qDebug() << hazard.initialX;
 		qDebug() << hazard.initialY;
 	}
+	for (auto& teleport : level.teleports)
+	{
+		teleport.state = tokenImmobile::State::ACTIVE;
+		teleport.item.get()->setPixmap
+		(
+			stateToImg(teleport.state, teleport.type)
+		);
+		teleport.item.get()->setPos(teleport.initialX, teleport.initialY);
+		teleport.item.get()->setZValue(tokenImmobileZ);
+		qDebug() << teleport.initialX;
+		qDebug() << teleport.initialY;
+	}
 }
 
 void GameplayScreen::levelSetComplete()
@@ -2098,6 +2173,10 @@ void GameplayScreen::addCurrentLevelToScene()
 	{
 		scene.get()->addItem(hazard.item.get());
 	}
+	for (const auto& teleport : levelsAll[levelCurrent].teleports)
+	{
+		scene.get()->addItem(teleport.item.get());
+	}
 }
 
 void GameplayScreen::removeCurrentLevelFromScene()
@@ -2135,6 +2214,10 @@ void GameplayScreen::removeCurrentLevelFromScene()
 	for (const auto& hazard : levelsAll[levelCurrent].hazards)
 	{
 		scene.get()->removeItem(hazard.item.get());
+	}
+	for (const auto& teleport : levelsAll[levelCurrent].teleports)
+	{
+		scene.get()->removeItem(teleport.item.get());
 	}
 }
 
@@ -2332,6 +2415,20 @@ void GameplayScreen::uiMenuBtnClickSave()
 						QString::number(hazard.item.get()->y()) +
 						"," +
 						tokenImmobile::stateToString(hazard.state) +
+						")";
+				}
+				qStream << "::\r\n";
+
+				qStream << "::Teleport=";
+				for (auto& teleport : levelsAll[levelCurrent].teleports)
+				{
+					qStream <<
+						"(" +
+						QString::number(teleport.item.get()->x()) +
+						"," +
+						QString::number(teleport.item.get()->y()) +
+						"," +
+						tokenImmobile::stateToString(teleport.state) +
 						")";
 				}
 				qStream << "::\r\n";
@@ -2579,6 +2676,26 @@ void GameplayScreen::uiMenuBtnClickLoad()
 								);
 							}
 						}
+						else if (line.contains("::Teleport="))
+						{
+							QString dataLine = extractSubstringInbetweenQt("::Teleport=", "::", line);
+							QStringList dataList = extractSubstringInbetweenQtLoopList("(", ")", dataLine);
+
+							for (int i = 0; i < dataList.length(); i++)
+							{
+								QStringList components = dataList[i].split(",", QString::SkipEmptyParts);
+								levelsAll[levelCurrent].teleports[i].item.get()->setPos
+								(
+									components[0].toInt(),
+									components[1].toInt()
+								);
+								levelsAll[levelCurrent].teleports[i].state = tokenImmobile::stateToEnum(components[2]);
+								levelsAll[levelCurrent].teleports[i].item.get()->setPixmap
+								(
+									stateToImg(levelsAll[levelCurrent].teleports[i].state, levelsAll[levelCurrent].teleports[i].type)
+								);
+							}
+						}
 						else if (line.contains("::LevelsComplete="))
 						{
 							QString dataLine = extractSubstringInbetweenQt("::LevelsComplete=", "::", line);
@@ -2666,6 +2783,8 @@ QPixmap GameplayScreen::stateToImg(const tokenImmobile::State &state, const toke
 			return imgMap.at("imgImmobileBlock");
 		else if (type == tokenImmobile::Type::HAZARD)
 			return imgMap.at("imgImmobileHazard");
+		else if (type == tokenImmobile::Type::TELEPORT)
+			return imgMap.at("imgImmobileTeleport");
 		else
 			return imgError;
 	}

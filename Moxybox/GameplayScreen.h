@@ -86,6 +86,7 @@ private:
 		{ "imgImmobileGate", QPixmap(":/Moxybox/Resources/tokenImmobileGate.png") },
 		{ "imgImmobileBlock", QPixmap(":/Moxybox/Resources/tokenImmobileBlock.png") },
 		{ "imgImmobileHazard", QPixmap(":/Moxybox/Resources/tokenImmobileHazard.png") },
+		{ "imgImmobileTeleport", QPixmap(":/Moxybox/Resources/tokenImmobileTeleport.png") },
 		{ "imgPlayerNeutral", QPixmap(":/Moxybox/Resources/tokenPlayerNeutral.png") },
 		{ "imgPlayerLeft", QPixmap(":/Moxybox/Resources/tokenPlayerLeft.png") },
 		{ "imgPlayerRight", QPixmap(":/Moxybox/Resources/tokenPlayerRight.png") },
@@ -322,7 +323,7 @@ private:
 	{
 		const int initialX;
 		const int initialY;
-		enum class Type { BLOCK, KEY, GATE, HAZARD, ERROR };
+		enum class Type { BLOCK, KEY, GATE, HAZARD, TELEPORT, ERROR };
 		Type type = Type::BLOCK;
 		enum class State { ACTIVE, INVISIBLE, HELD, ERROR };
 		State state = State::ACTIVE;
@@ -362,6 +363,8 @@ private:
 				return Type::GATE;
 			else if (str == "HAZARD")
 				return Type::HAZARD;
+			else if (str == "TELEPORT")
+				return Type::TELEPORT;
 			else
 				return Type::ERROR;
 		}
@@ -376,6 +379,8 @@ private:
 				return "GATE";
 			else if (type == Type::HAZARD)
 				return "HAZARD";
+			else if (type == Type::TELEPORT)
+				return "TELEPORT";
 			else
 				return "ERROR";
 		}
@@ -516,6 +521,7 @@ private:
 		std::vector<tokenImmobile> keys;
 		std::vector<tokenImmobile> gates;
 		std::vector<tokenImmobile> hazards;
+		std::vector<tokenImmobile> teleports;
 		std::vector<tokenUtil> utils;
 	};
 	std::vector<levelData> levelsAll;
@@ -595,6 +601,7 @@ private:
 
 	const QString uiGameplayMessagesObstacle = "Need force of impact to get past obstacles.";
 	const QString uiGameplayMessagesHazard = "Need knockback impact to cross hazards. Careful! If you land on it, you have to start the level over.";
+	const QString uiGameplayMessagesTeleport = "You traveled through a special route, coming up on the other end.";
 	const QString uiGameplayMessagesKeyObtained = "You got a key! Keys can be used to open pods.";
 	const QString uiGameplayMessagesKeyNeeded = "Key needed to open pod.";
 	const QString uiGameplayMessagesTrapPusherObtained = "You picked up a Spring Trap! Spring traps will knock back patrollers who hit them.";
@@ -656,6 +663,7 @@ private:
 	void suckInHitCheck();
 	void suckInRange();
 	void hazardHitCheck();
+	void teleportHitCheck();
 	void levelSetFailed();
 	void levelSetToDefaults(levelData& level);
 	void levelSetComplete();
