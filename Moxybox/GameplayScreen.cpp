@@ -1947,6 +1947,7 @@ void GameplayScreen::teleportHitCheck()
 					levelsAll[levelCurrent].teleports[i - 1].item.get()->y()
 				);
 			}
+			uiGameplayMessagesTextBox.get()->setText(uiGameplayMessagesTeleport);
 			return;
 		}
 	}
