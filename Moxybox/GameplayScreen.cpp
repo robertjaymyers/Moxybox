@@ -100,22 +100,44 @@ GameplayScreen::GameplayScreen(QWidget *parent)
 	uiGameplayStatsGroup.get()->setMinimumWidth(minBoxWidth);
 	uiGameplayStatsLayout.get()->setContentsMargins(5, 25, 0, 5);
 	uiGameplayStatsLayout.get()->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-	uiGameplayStatsLayout.get()->addWidget(uiGameplayStatsCounterTurns.get(), 0, 0, Qt::AlignLeft | Qt::AlignTop);
-	uiGameplayStatsLayout.get()->addWidget(uiGameplayStatsCounterKeys.get(), 1, 0, Qt::AlignLeft | Qt::AlignTop);
-	uiGameplayStatsLayout.get()->addWidget(uiGameplayStatsCounterTrapPushers.get(), 2, 0, Qt::AlignLeft | Qt::AlignTop);
-	uiGameplayStatsLayout.get()->addWidget(uiGameplayStatsCounterTrapSuckers.get(), 3, 0, Qt::AlignLeft | Qt::AlignTop);
 
-	uiGameplayStatsCounterTurns.get()->setStyleSheet(styleMap.at("uiGameplayLabelStyle"));
-	uiGameplayStatsCounterTurns.get()->setFont(uiGameplayFontTextBox);
+	statCounterMap.insert(std::pair<StatCounterType, statComponent>(
+		StatCounterType::TURNS_REMAINING,
+		statComponent{ "Turns Remaining: ", 0, 0, Qt::AlignLeft | Qt::AlignTop }
+		)
+	);
 
-	uiGameplayStatsCounterKeys.get()->setStyleSheet(styleMap.at("uiGameplayLabelStyle"));
-	uiGameplayStatsCounterKeys.get()->setFont(uiGameplayFontTextBox);
+	statCounterMap.insert(std::pair<StatCounterType, statComponent>(
+		StatCounterType::KEYS_HELD,
+		statComponent{ "Keys: ", 1, 0, Qt::AlignLeft | Qt::AlignTop }
+		)
+	);
 
-	uiGameplayStatsCounterTrapPushers.get()->setStyleSheet(styleMap.at("uiGameplayLabelStyle"));
-	uiGameplayStatsCounterTrapPushers.get()->setFont(uiGameplayFontTextBox);
+	statCounterMap.insert(std::pair<StatCounterType, statComponent>(
+		StatCounterType::TRAPS_PUSHERS,
+		statComponent{ "Spring Traps: ", 2, 0, Qt::AlignLeft | Qt::AlignTop }
+		)
+	);
 
-	uiGameplayStatsCounterTrapSuckers.get()->setStyleSheet(styleMap.at("uiGameplayLabelStyle"));
-	uiGameplayStatsCounterTrapSuckers.get()->setFont(uiGameplayFontTextBox);
+	statCounterMap.insert(std::pair<StatCounterType, statComponent>(
+		StatCounterType::TRAPS_SUCKERS,
+		statComponent{ "Magnet Traps: ", 3, 0, Qt::AlignLeft | Qt::AlignTop }
+		)
+	);
+
+	for (auto& entry : statCounterMap)
+	{
+		uiGameplayStatsLayout.get()->addWidget
+		(
+			entry.second.widget.get(),
+			entry.second.gridLayoutRow,
+			entry.second.gridLayoutCol,
+			entry.second.gridLayoutAlign
+		);
+
+		entry.second.widget.get()->setStyleSheet(styleMap.at("uiGameplayLabelStyle"));
+		entry.second.widget.get()->setFont(uiGameplayFontTextBox);
+	}
 
 	uiGameplayObjectivesGroup.get()->setLayout(uiGameplayObjectivesLayout.get());
 	uiGameplayObjectivesGroup.get()->setMinimumWidth(minBoxWidth);
@@ -650,7 +672,7 @@ void GameplayScreen::keyReleaseEvent(QKeyEvent *event)
 							facingToImg(levelsAll[levelCurrent].players[pIndex].facing)
 						);
 						levelsAll[levelCurrent].turnsRemaining--;
-						uiGameplayUpdateStatCounterTurns();
+						uiGameplayUpdateStatCounter(StatCounterType::TURNS_REMAINING);
 						teleportHitCheck();
 						turnOwner = TurnOwner::PATROLLER;
 					}
@@ -699,7 +721,7 @@ void GameplayScreen::keyReleaseEvent(QKeyEvent *event)
 							stateToImg(levelsAll[levelCurrent].utils[pushI[0]].stateModified, levelsAll[levelCurrent].utils[pushI[0]].type)
 						);
 						pushI.erase(pushI.begin() + 0);
-						uiGameplayUpdateStatCounterPushers();
+						uiGameplayUpdateStatCounter(StatCounterType::TRAPS_PUSHERS);
 						uiGameplayMessagesTextBox->setText(uiGameplayMessagesTrapPusherDeployed);
 
 						levelsAll[levelCurrent].players[pIndex].facing = tokenPlayer::Facing::NEUTRAL;
@@ -724,7 +746,7 @@ void GameplayScreen::keyReleaseEvent(QKeyEvent *event)
 							stateToImg(levelsAll[levelCurrent].utils[suckI[0]].stateModified, levelsAll[levelCurrent].utils[suckI[0]].type)
 						);
 						suckI.erase(suckI.begin() + 0);
-						uiGameplayUpdateStatCounterSuckers();
+						uiGameplayUpdateStatCounter(StatCounterType::TRAPS_SUCKERS);
 						uiGameplayMessagesTextBox->setText(uiGameplayMessagesTrapSuckerDeployed);
 
 						levelsAll[levelCurrent].players[pIndex].facing = tokenPlayer::Facing::NEUTRAL;
@@ -1035,7 +1057,7 @@ bool GameplayScreen::hitSolidObjectPlayerMoving()
 		{
 			hitImmobileObjectAndDelete(levelsAll[levelCurrent].gates, nextY, nextX);
 			levelsAll[levelCurrent].players[pIndex].heldKeys--;
-			uiGameplayUpdateStatCounterKeys();
+			uiGameplayUpdateStatCounter(StatCounterType::KEYS_HELD);
 			return false;
 		}
 		else
@@ -1047,7 +1069,7 @@ bool GameplayScreen::hitSolidObjectPlayerMoving()
 	else if (hitImmobileObjectAndDelete(levelsAll[levelCurrent].keys, nextY, nextX))
 	{
 		levelsAll[levelCurrent].players[pIndex].heldKeys++;
-		uiGameplayUpdateStatCounterKeys();
+		uiGameplayUpdateStatCounter(StatCounterType::KEYS_HELD);
 		uiGameplayMessagesTextBox.get()->setText(uiGameplayMessagesKeyObtained);
 		return false;
 	}
@@ -1121,13 +1143,13 @@ bool GameplayScreen::hitUtil(const int playerNextY, const int playerNextX)
 				if (levelsAll[levelCurrent].utils[i].type == tokenUtil::Type::PUSHER)
 				{
 					levelsAll[levelCurrent].players[pIndex].heldUtilPushIndex.push_back(i);
-					uiGameplayUpdateStatCounterPushers();
+					uiGameplayUpdateStatCounter(StatCounterType::TRAPS_PUSHERS);
 					uiGameplayMessagesTextBox->setText(uiGameplayMessagesTrapPusherObtained);
 				}
 				else if (levelsAll[levelCurrent].utils[i].type == tokenUtil::Type::SUCKER)
 				{
 					levelsAll[levelCurrent].players[pIndex].heldUtilSuckIndex.push_back(i);
-					uiGameplayUpdateStatCounterSuckers();
+					uiGameplayUpdateStatCounter(StatCounterType::TRAPS_SUCKERS);
 					uiGameplayMessagesTextBox->setText(uiGameplayMessagesTrapSuckerObtained);
 				}
 				levelsAll[levelCurrent].utils[i].stateModified = tokenUtil::State::HELD;
@@ -1220,7 +1242,7 @@ void GameplayScreen::knockbackPlayerMoving()
 		{
 			hitImmobileObjectAndDelete(levelsAll[levelCurrent].gates, nextY, nextX);
 			levelsAll[levelCurrent].players[pIndex].heldKeys--;
-			uiGameplayUpdateStatCounterKeys();
+			uiGameplayUpdateStatCounter(StatCounterType::KEYS_HELD);
 			return;
 		}
 		else
@@ -1232,7 +1254,7 @@ void GameplayScreen::knockbackPlayerMoving()
 	else if (hitImmobileObjectAndDelete(levelsAll[levelCurrent].keys, nextY, nextX))
 	{
 		levelsAll[levelCurrent].players[pIndex].heldKeys++;
-		uiGameplayUpdateStatCounterKeys();
+		uiGameplayUpdateStatCounter(StatCounterType::KEYS_HELD);
 		uiGameplayMessagesTextBox.get()->setText(uiGameplayMessagesKeyObtained);
 		return;
 	}
@@ -1511,7 +1533,7 @@ void GameplayScreen::knockbackEnemyMoving(int enemyNum)
 		{
 			hitImmobileObjectAndDelete(levelsAll[levelCurrent].gates, nextY, nextX);
 			levelsAll[levelCurrent].players[pIndex].heldKeys--;
-			uiGameplayUpdateStatCounterKeys();
+			uiGameplayUpdateStatCounter(StatCounterType::KEYS_HELD);
 			return;
 		}
 		else
@@ -1523,7 +1545,7 @@ void GameplayScreen::knockbackEnemyMoving(int enemyNum)
 	else if (hitImmobileObjectAndDelete(levelsAll[levelCurrent].keys, nextY, nextX))
 	{
 		levelsAll[levelCurrent].players[pIndex].heldKeys++;
-		uiGameplayUpdateStatCounterKeys();
+		uiGameplayUpdateStatCounter(StatCounterType::KEYS_HELD);
 		uiGameplayMessagesTextBox.get()->setText(uiGameplayMessagesKeyObtained);
 		return;
 	}
@@ -1733,7 +1755,7 @@ void GameplayScreen::suckInHitCheck()
 		{
 			hitImmobileObjectAndDelete(levelsAll[levelCurrent].gates, nextY, nextX);
 			levelsAll[levelCurrent].players[pIndex].heldKeys--;
-			uiGameplayUpdateStatCounterKeys();
+			uiGameplayUpdateStatCounter(StatCounterType::KEYS_HELD);
 			return;
 		}
 		else
@@ -1745,7 +1767,7 @@ void GameplayScreen::suckInHitCheck()
 	else if (hitImmobileObjectAndDelete(levelsAll[levelCurrent].keys, nextY, nextX))
 	{
 		levelsAll[levelCurrent].players[pIndex].heldKeys++;
-		uiGameplayUpdateStatCounterKeys();
+		uiGameplayUpdateStatCounter(StatCounterType::KEYS_HELD);
 		uiGameplayMessagesTextBox.get()->setText(uiGameplayMessagesKeyObtained);
 		return;
 	}
@@ -2145,31 +2167,28 @@ void GameplayScreen::removeCurrentLevelFromScene()
 
 void GameplayScreen::uiGameplaySetToDefaults()
 {
-	uiGameplayUpdateStatCounterTurns();
-	uiGameplayUpdateStatCounterPushers();
-	uiGameplayUpdateStatCounterSuckers();
-	uiGameplayUpdateStatCounterKeys();
+	for (auto& entry : statCounterMap)
+		uiGameplayUpdateStatCounter(entry.first);
 	uiGameplayMessagesTextBox.get()->setText("");
 }
 
-void GameplayScreen::uiGameplayUpdateStatCounterTurns()
+void GameplayScreen::uiGameplayUpdateStatCounter(const StatCounterType &statCounterType)
 {
-	uiGameplayStatsCounterTurns.get()->setText("Turns Remaining: " + QString::number(levelsAll[levelCurrent].turnsRemaining));
-}
-
-void GameplayScreen::uiGameplayUpdateStatCounterKeys()
-{
-	uiGameplayStatsCounterKeys.get()->setText("Keys: " + QString::number(levelsAll[levelCurrent].players[pIndex].heldKeys));
-}
-
-void GameplayScreen::uiGameplayUpdateStatCounterPushers()
-{
-	uiGameplayStatsCounterTrapPushers->setText("Spring Traps: " + QString::number(levelsAll[levelCurrent].players[pIndex].heldUtilPushIndex.size()));
-}
-
-void GameplayScreen::uiGameplayUpdateStatCounterSuckers()
-{
-	uiGameplayStatsCounterTrapSuckers.get()->setText("Magnet Traps: " + QString::number(levelsAll[levelCurrent].players[pIndex].heldUtilSuckIndex.size()));
+	switch (statCounterType)
+	{
+	case StatCounterType::TURNS_REMAINING:
+		statCounterMap.at(statCounterType).updateCounter(levelsAll[levelCurrent].turnsRemaining);
+		break;
+	case StatCounterType::KEYS_HELD:
+		statCounterMap.at(statCounterType).updateCounter(levelsAll[levelCurrent].players[pIndex].heldKeys);
+		break;
+	case StatCounterType::TRAPS_PUSHERS:
+		statCounterMap.at(statCounterType).updateCounter(levelsAll[levelCurrent].players[pIndex].heldUtilPushIndex.size());
+		break;
+	case StatCounterType::TRAPS_SUCKERS:
+		statCounterMap.at(statCounterType).updateCounter(levelsAll[levelCurrent].players[pIndex].heldUtilSuckIndex.size());
+		break;
+	}
 }
 
 void GameplayScreen::uiMenuBtnClickResume()
@@ -2443,10 +2462,8 @@ void GameplayScreen::uiMenuBtnClickLoad()
 								levelsAll[levelCurrent].players[pIndex].heldUtilSuckIndex[i] = utilSuckList[i].toInt();
 							}
 
-							uiGameplayUpdateStatCounterTurns();
-							uiGameplayUpdateStatCounterKeys();
-							uiGameplayUpdateStatCounterPushers();
-							uiGameplayUpdateStatCounterSuckers();
+							for (auto& entry : statCounterMap)
+								uiGameplayUpdateStatCounter(entry.first);
 						}
 						else if (line.contains("::Gate="))
 						{

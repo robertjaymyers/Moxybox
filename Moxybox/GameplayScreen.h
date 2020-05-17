@@ -541,11 +541,21 @@ private:
 	std::unique_ptr<QGridLayout> uiGameplayMessagesLayout = std::make_unique<QGridLayout>();
 	std::unique_ptr<QGridLayout> uiGameplayKeymapLayout = std::make_unique<QGridLayout>();
 
-	std::unique_ptr<QLabel> uiGameplayStatsCounterKeys = std::make_unique<QLabel>();
-	std::unique_ptr<QLabel> uiGameplayStatsCounterTrapPushers = std::make_unique<QLabel>();
-	std::unique_ptr<QLabel> uiGameplayStatsCounterTrapSuckers = std::make_unique<QLabel>();
+	enum class StatCounterType { TURNS_REMAINING, KEYS_HELD, TRAPS_PUSHERS, TRAPS_SUCKERS };
+	struct statComponent
+	{
+		const QString name; // The part that precedes the number, e.g. "Turns Remaining: "
+		const int gridLayoutRow;
+		const int gridLayoutCol;
+		const Qt::Alignment gridLayoutAlign;
+		std::unique_ptr<QLabel> widget = std::make_unique<QLabel>();
 
-	std::unique_ptr<QLabel> uiGameplayStatsCounterTurns = std::make_unique<QLabel>();
+		void updateCounter(const int &number)
+		{
+			widget.get()->setText(name + QString::number(number));
+		}
+	};
+	std::map<StatCounterType, statComponent> statCounterMap;
 
 	std::unique_ptr<QTextBrowser> uiGameplayObjectivesTextBox = std::make_unique<QTextBrowser>();
 	std::unique_ptr<QTextBrowser> uiGameplayMessagesTextBox = std::make_unique<QTextBrowser>();
@@ -576,7 +586,7 @@ private:
 		const int uiButtonGridLayoutCol;
 		const int uiLabelGridLayoutRow;
 		const int uiLabelGridLayoutCol;
-		Qt::Alignment gridLayoutAlign;
+		const Qt::Alignment gridLayoutAlign;
 		std::unique_ptr<QPushButton> uiButton = std::make_unique<QPushButton>();
 		std::unique_ptr<QLabel> uiLabel = std::make_unique<QLabel>();
 	};
@@ -662,10 +672,10 @@ private:
 	void addCurrentLevelToScene();
 	void removeCurrentLevelFromScene();
 	void uiGameplaySetToDefaults();
-	void uiGameplayUpdateStatCounterTurns();
-	void uiGameplayUpdateStatCounterKeys();
-	void uiGameplayUpdateStatCounterPushers();
-	void uiGameplayUpdateStatCounterSuckers();
+	void uiGameplayUpdateStatCounter(const StatCounterType &statCounterType);
+	//void uiGameplayUpdateStatCounterKeys();
+	//void uiGameplayUpdateStatCounterPushers();
+	//void uiGameplayUpdateStatCounterSuckers();
 	void uiMenuBtnClickResume();
 	void uiMenuBtnClickSave();
 	void uiMenuBtnClickLoad();
