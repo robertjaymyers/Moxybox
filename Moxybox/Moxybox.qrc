@@ -39,5 +39,6 @@
         <file>Resources/tokenPlayerUp.png</file>
         <file>Resources/tokenPlayerNeutral.png</file>
         <file>Resources/tokenImmobileTeleport.png</file>
+        <file>Fonts/Pixellari.ttf</file>
     </qresource>
 </RCC>

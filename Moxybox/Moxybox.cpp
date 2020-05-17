@@ -5,6 +5,8 @@ Moxybox::Moxybox(QWidget *parent)
 {
 	ui.setupUi(this);
 
+	fontDatabase.addApplicationFont(":/Moxybox/Fonts/Pixellari.ttf");
+
 	ui.centralWidget->setLayout(layout.get());
 
 	layout.get()->setMargin(0);
