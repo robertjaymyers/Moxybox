@@ -451,25 +451,13 @@ private:
 	// ------
 	// GRID
 	// ------
-	struct gridPieceInner // No facing orientation needed (appearance identical no matter rotation)
+	struct gridPiece
 	{
+		QPoint gridPoint;
+		QPointF pos;
 		std::unique_ptr<QGraphicsPixmapItem> item = std::make_unique<QGraphicsPixmapItem>(nullptr);
 	};
-	struct gridPieceEdge // Facing orientation is based on up/down/left/right
-	{
-		std::unique_ptr<QGraphicsPixmapItem> item = std::make_unique<QGraphicsPixmapItem>(nullptr);
-		enum class Facing { UP, DOWN, LEFT, RIGHT };
-		Facing facing = Facing::UP;
-	};
-	struct gridPieceCorner // Facing orientation is based on upperLeft/upperRight/lowerLeft/lowerRight
-	{
-		std::unique_ptr<QGraphicsPixmapItem> item = std::make_unique<QGraphicsPixmapItem>(nullptr);
-		enum class Facing { UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT };
-		Facing facing = Facing::UP_LEFT;
-	};
-	std::vector<gridPieceInner> gridPiecesInner;
-	std::vector<gridPieceEdge> gridPiecesEdge;
-	std::vector<gridPieceCorner> gridPiecesCorner;
+	std::vector<gridPiece> gridPiecesAll;
 
 	// Note that there's some framework lingering here from a scrapped feature to have grid size modifiable by level.
 	// As well as a scrapped framework to have the size of grid pieces modifiable (for zooming and the like).

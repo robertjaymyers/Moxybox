@@ -1,8 +1,5 @@
 #include "GameplayScreen.h"
 
-// !important: Need to build an installer that can install Pixellari font. 
-// Otherwise, people using the program won't have it...
-
 GameplayScreen::GameplayScreen(QWidget *parent)
 	: QGraphicsView(parent)
 {
@@ -288,127 +285,51 @@ GameplayScreen::GameplayScreen(QWidget *parent)
 
 	uiMenuGroup.get()->setVisible(false);
 
-	// GRID CORNER
-	gridPiecesCorner.reserve(4);
 
-	gridPieceCorner cornerUpL;
-	cornerUpL.item.get()->setPixmap(imgMap.at("imgGridCornerUpL"));
-	cornerUpL.item.get()->setPos(gridAnchorX, gridAnchorY);
-	cornerUpL.facing = gridPieceCorner::Facing::UP_LEFT;
-	gridPiecesCorner.emplace_back(std::move(cornerUpL));
-
-	gridPieceCorner cornerUpR;
-	cornerUpR.item.get()->setPixmap(imgMap.at("imgGridCornerUpR"));
-	cornerUpR.item.get()->setPos(gridBoundRight - gridPieceSize, gridAnchorY);
-	cornerUpR.facing = gridPieceCorner::Facing::UP_RIGHT;
-	gridPiecesCorner.emplace_back(std::move(cornerUpR));
-
-	gridPieceCorner cornerDownL;
-	cornerDownL.item.get()->setPixmap(imgMap.at("imgGridCornerDownL"));
-	cornerDownL.item.get()->setPos(gridAnchorX, gridBoundDown - gridPieceSize);
-	cornerDownL.facing = gridPieceCorner::Facing::DOWN_LEFT;
-	gridPiecesCorner.emplace_back(std::move(cornerDownL));
-
-	gridPieceCorner cornerDownR;
-	cornerDownR.item.get()->setPixmap(imgMap.at("imgGridCornerDownR"));
-	cornerDownR.item.get()->setPos(gridBoundRight - gridPieceSize, gridBoundDown - gridPieceSize);
-	cornerDownR.facing = gridPieceCorner::Facing::DOWN_RIGHT;
-	gridPiecesCorner.emplace_back(std::move(cornerDownR));
-
-	for (auto& piece : gridPiecesCorner)
+	int gridPosX = gridAnchorX;
+	int gridPosY = gridAnchorY;
+	for (int col = 0; col < gridColSize; col++)
 	{
-		piece.item.get()->setZValue(gridPieceZ);
-		scene.get()->addItem(piece.item.get());
-	}
-
-
-	// GRID INNER
-	const int gridInnerXConst = gridAnchorX + gridPieceSize;
-	int gridInnerY = gridAnchorY + gridPieceSize;
-	int gridInnerX = gridInnerXConst;
-	const int downInnerTotal = gridColSize - 2;
-	const int acrossInnerTotal = gridRowSize - 2;
-	gridPiecesInner.reserve(downInnerTotal * acrossInnerTotal);
-	for (int downInner = 0; downInner < downInnerTotal; downInner++)
-	{
-		for (int acrossInner = 0; acrossInner < acrossInnerTotal; acrossInner++)
+		for (int row = 0; row < gridRowSize; row++)
 		{
-			gridPieceInner piece;
-			piece.item.get()->setPixmap(imgMap.at("imgGridInner"));
-			piece.item.get()->setPos(gridInnerX, gridInnerY);
-			gridPiecesInner.emplace_back(std::move(piece));
-
-			gridInnerX += gridPieceSize;
+			gridPiecesAll.emplace_back
+			(
+				gridPiece
+				{
+					QPoint(row, col),
+					QPointF(gridPosX, gridPosY)
+				}
+			);
+			gridPosX += gridPieceSize;
 		}
-		gridInnerY += gridPieceSize;
-		gridInnerX = gridInnerXConst;
+		gridPosY += gridPieceSize;
+		gridPosX = gridAnchorX;
 	}
 
-	for (auto& piece : gridPiecesInner)
+	for (auto& piece : gridPiecesAll)
 	{
-		piece.item.get()->setZValue(gridPieceZ);
-		scene.get()->addItem(piece.item.get());
-	}
+		QString imgKey;
+		if (piece.gridPoint == QPoint(0, 0))
+			imgKey = "imgGridCornerUpL";
+		else if (piece.gridPoint == QPoint(gridRowSize - 1, 0))
+			imgKey = "imgGridCornerUpR";
+		else if (piece.gridPoint == QPoint(0, gridColSize - 1))
+			imgKey = "imgGridCornerDownL";
+		else if (piece.gridPoint == QPoint(gridRowSize - 1, gridColSize - 1))
+			imgKey = "imgGridCornerDownR";
+		else if (piece.gridPoint.x() > 0 && piece.gridPoint.x() < gridRowSize - 1 && piece.gridPoint.y() == 0)
+			imgKey = "imgGridEdgeUpX";
+		else if ((piece.gridPoint.x() > 0 && piece.gridPoint.x() < gridRowSize - 1) && piece.gridPoint.y() == gridColSize - 1)
+			imgKey = "imgGridEdgeDownX";
+		else if (piece.gridPoint.y() > 0 && piece.gridPoint.y() < gridColSize - 1 && piece.gridPoint.x() == 0)
+			imgKey = "imgGridEdgeLeftY";
+		else if ((piece.gridPoint.y() > 0 && piece.gridPoint.y() < gridColSize - 1) && piece.gridPoint.x() == gridRowSize - 1)
+			imgKey = "imgGridEdgeRightY";
+		else
+			imgKey = "imgGridInner";
 
-
-	// GRID EDGE
-	const int numEdgesHorizontal = gridRowSize - 2;
-	const int numEdgesVertical = gridColSize - 2;
-	gridPiecesEdge.reserve(numEdgesHorizontal * numEdgesVertical);
-
-	// Edge naming convention: X and Y are the directions the tiles are placed in.
-	// i.e. UpX is the tiles placed across, at the top.
-
-	int gridPieceEdgeUpX = gridPieceSize + gridAnchorX;
-	for (int i = 0; i < numEdgesHorizontal; i++)
-	{
-		gridPieceEdge piece;
-		piece.item.get()->setPixmap(imgMap.at("imgGridEdgeUpX"));
-		piece.item.get()->setPos(gridPieceEdgeUpX, gridAnchorY);
-		piece.facing = gridPieceEdge::Facing::UP;
-		gridPiecesEdge.emplace_back(std::move(piece));
-
-		gridPieceEdgeUpX += gridPieceSize;
-	}
-
-	int gridPieceEdgeDownX = gridPieceSize + gridAnchorX;
-	for (int i = 0; i < numEdgesHorizontal; i++)
-	{
-		gridPieceEdge piece;
-		piece.item.get()->setPixmap(imgMap.at("imgGridEdgeDownX"));
-		piece.item.get()->setPos(gridPieceEdgeDownX, gridBoundDown - gridPieceSize);
-		piece.facing = gridPieceEdge::Facing::DOWN;
-		gridPiecesEdge.emplace_back(std::move(piece));
-
-		gridPieceEdgeDownX += gridPieceSize;
-	}
-
-	int gridPieceEdgeLeftY = gridAnchorY + gridPieceSize;
-	for (int i = 0; i < numEdgesVertical; i++)
-	{
-		gridPieceEdge piece;
-		piece.item.get()->setPixmap(imgMap.at("imgGridEdgeLeftY"));
-		piece.item.get()->setPos(gridAnchorX, gridPieceEdgeLeftY);
-		piece.facing = gridPieceEdge::Facing::LEFT;
-		gridPiecesEdge.emplace_back(std::move(piece));
-
-		gridPieceEdgeLeftY += gridPieceSize;
-	}
-
-	int gridPieceEdgeRightY = gridAnchorY + gridPieceSize;
-	for (int i = 0; i < numEdgesVertical; i++)
-	{
-		gridPieceEdge piece;
-		piece.item.get()->setPixmap(imgMap.at("imgGridEdgeRightY"));
-		piece.item.get()->setPos(gridBoundRight - gridPieceSize, gridPieceEdgeRightY);
-		piece.facing = gridPieceEdge::Facing::RIGHT;
-		gridPiecesEdge.emplace_back(std::move(piece));
-
-		gridPieceEdgeRightY += gridPieceSize;
-	}
-
-	for (auto& piece : gridPiecesEdge)
-	{
+		piece.item.get()->setPixmap(QPixmap(imgMap.at(imgKey)));
+		piece.item.get()->setPos(piece.pos);
 		piece.item.get()->setZValue(gridPieceZ);
 		scene.get()->addItem(piece.item.get());
 	}
