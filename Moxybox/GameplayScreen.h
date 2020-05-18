@@ -20,6 +20,7 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QFileInfo>
+#include <QInputDialog>
 #include <algorithm>
 
 class GameplayScreen : public QGraphicsView
@@ -563,6 +564,13 @@ private:
 	const Qt::Key keybindNextLevel = Qt::Key::Key_Space;
 	const Qt::Key keybindResetLevel = Qt::Key::Key_R;
 
+	// Note: We name these as debug to distinguish them as keys that are not a part of the
+	// interface communicated to the player. They are available for usage regardless of whether
+	// program is technically in debug mode. We put these in so that testing a specific level is easier.
+	// Otherwise, it's going to be hard for people to test new levels they make with the level creator.
+	const Qt::Key keybindSkipLevel_DEBUG = Qt::Key::Key_F1;
+	const Qt::Key keybindLoadLevelByName_DEBUG = Qt::Key::Key_F2;
+
 	// We set up an enum ID for each modifiable keybind, so that when the UI is clicked
 	// to modify a key, we know which one to apply the modification to after key input.
 	enum class KeybindModifiable
@@ -673,9 +681,6 @@ private:
 	void removeCurrentLevelFromScene();
 	void uiGameplaySetToDefaults();
 	void uiGameplayUpdateStatCounter(const StatCounterType &statCounterType);
-	//void uiGameplayUpdateStatCounterKeys();
-	//void uiGameplayUpdateStatCounterPushers();
-	//void uiGameplayUpdateStatCounterSuckers();
 	void uiMenuBtnClickResume();
 	void uiMenuBtnClickSave();
 	void uiMenuBtnClickLoad();

@@ -786,6 +786,54 @@ void GameplayScreen::keyReleaseEvent(QKeyEvent *event)
 					uiMenuGroup.get()->setVisible(true);
 				}
 			}
+			else if (event->key() == keybindSkipLevel_DEBUG)
+			{
+				levelSetComplete();
+			}
+			else if (event->key() == keybindLoadLevelByName_DEBUG)
+			{
+				QStringList levelNames;
+				for (const auto& level : levelsAll)
+				{
+					levelNames.append(level.name + " by " + level.creator);
+				}
+
+				bool ok;
+				QString level = QInputDialog::getItem
+				(
+					this->parentWidget(),
+					tr("Jump To Level"), 
+					tr("Level:"), 
+					levelNames,
+					levelCurrent, 
+					false, 
+					&ok, 
+					Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::MSWindowsFixedSizeDialogHint
+				);
+
+				if (ok && !level.isEmpty())
+				{
+					// Logic could be a little cleaner. Using levelSetComplete causes
+					// the current level to be set as complete even if it isn't,
+					// meaning if you naturally come back to a level after jumping backwards,
+					// you'll skip over. Since this is a DEBUG command for testing, it's not super important.
+					// What matters most is the jumping to functionally works to enable quick testing.
+					levelSetComplete();
+
+					levelsAll[levelCurrent].players[pIndex].heldUtilPushIndex.clear();
+					levelsAll[levelCurrent].players[pIndex].heldUtilSuckIndex.clear();
+					removeCurrentLevelFromScene();
+					levelCurrent = levelNames.indexOf(level);
+					addCurrentLevelToScene();
+					levelSetToDefaults(levelsAll[levelCurrent]);
+					scene.get()->removeItem(splashItem.get());
+					uiGameplaySetToDefaults();
+					uiGameplayGroup->setVisible(true);
+					updateWindowTitle();
+					gameState = GameState::PLAYING;
+					turnOwner = TurnOwner::PLAYER;
+				}
+			}
 		}
 		else if (gameState == GameState::PAUSED)
 		{
@@ -806,7 +854,9 @@ void GameplayScreen::keyReleaseEvent(QKeyEvent *event)
 				newKeybind == keybindMap.at(KeybindModifiable::PLACE_SUCKER_UTIL).keybind ||
 				newKeybind == keybindMap.at(KeybindModifiable::OPEN_MENU).keybind ||
 				newKeybind == keybindNextLevel ||
-				newKeybind == keybindResetLevel)
+				newKeybind == keybindResetLevel ||
+				newKeybind == keybindSkipLevel_DEBUG ||
+				newKeybind == keybindLoadLevelByName_DEBUG)
 			{
 				// Logic here is a bit redundant. Could maybe be improved.
 
@@ -837,6 +887,18 @@ void GameplayScreen::keyReleaseEvent(QKeyEvent *event)
 				else if (newKeybind == keybindResetLevel)
 				{
 					qMsg.setText("\"" + QKeySequence(newKeybind).toString() + "\" is already bound to the \"" + "Reset Level" + "\" command.");
+					qMsg.exec();
+					return;
+				}
+				else if (newKeybind == keybindSkipLevel_DEBUG)
+				{
+					qMsg.setText("\"" + QKeySequence(newKeybind).toString() + "\" is already bound to the \"" + "Skip Level DEBUG" + "\" command.");
+					qMsg.exec();
+					return;
+				}
+				else if (newKeybind == keybindLoadLevelByName_DEBUG)
+				{
+					qMsg.setText("\"" + QKeySequence(newKeybind).toString() + "\" is already bound to the \"" + "Jump To Level DEBUG" + "\" command.");
 					qMsg.exec();
 					return;
 				}
@@ -1909,6 +1971,7 @@ void GameplayScreen::levelSetToDefaults(levelData& level)
 	levelsAll[levelCurrent].players[pIndex].heldUtilPushIndex.clear();
 	levelsAll[levelCurrent].players[pIndex].heldUtilSuckIndex.clear();
 	levelsAll[levelCurrent].turnsRemaining = levelsAll[levelCurrent].turnsInitial;
+	levelsAll[levelCurrent].state = levelData::State::UNTOUCHED;
 	for (auto& key : level.keys)
 	{
 		key.state = tokenImmobile::State::ACTIVE;
