@@ -3052,11 +3052,11 @@ QStringList GameplayScreen::extractSubstringInbetweenQtLoopList(const QString st
 
 void GameplayScreen::modLoadThemeIfExists()
 {
-	const QString modThemePath = appExecutablePath + "/Mods/Theme/theme.MoxyStyle";
-	if (!QFile(modThemePath).exists())
+	const QString stylePath = themePathMods + "/theme.MoxyStyle";
+	if (!QFile(stylePath).exists())
 		return;
 
-	QFile fileRead(modThemePath);
+	QFile fileRead(stylePath);
 	if (fileRead.open(QIODevice::ReadOnly))
 	{
 		QTextStream qStream(&fileRead);
