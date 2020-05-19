@@ -68,11 +68,17 @@ GameplayScreen::GameplayScreen(QWidget *parent)
 	if (firstTimeSetup)
 	{
 		QDir dirSaves(windowsHomePath + "/" + savesFolderName);
-		QDir dirLevels(windowsHomePath + "/" + levelFolderName);
+		QDir dirLevelDataMods(levelDataPathMods);
+		QDir dirThemeMods(themePathMods + "/Images");
+
 		if (!dirSaves.exists())
 			dirSaves.mkpath(".");
-		if (!dirLevels.exists())
-			dirLevels.mkpath(".");
+
+		if (!dirLevelDataMods.exists())
+			dirLevelDataMods.mkpath(".");
+
+		if (!dirThemeMods.exists())
+			dirThemeMods.mkpath(".");
 	}
 
 	setStyleSheet(styleMap.at("baseStyle"));
@@ -374,9 +380,9 @@ GameplayScreen::GameplayScreen(QWidget *parent)
 	// the permissions of, for example, the "program files" folder. They can place it in their documents/home
 	// area instead and the game will pick it up.
 	{
-		QDir dirLevels(windowsHomePath + "/" + levelFolderName);
+		QDir dirLevels(levelDataPathMods);
 		if (dirLevels.exists())
-			dirIteratorLoadLevelData(levelDataPathExtra);
+			dirIteratorLoadLevelData(levelDataPathMods);
 	}
 
 	std::sort(levelsAll.begin(), levelsAll.end(), [&](const levelData &lhs, const levelData &rhs) {

@@ -48,8 +48,9 @@ private:
 	const QString savesFolderName = "Saves";
 
 	const QString levelDataPath = appExecutablePath + "/" + levelFolderName;
-	const QString levelDataPathExtra = windowsHomePath + "/" + levelFolderName;
+	const QString levelDataPathMods = windowsHomePath + "/Mods/" + levelFolderName;
 	const QString levelDataFileExtension = "MoxyLvl";
+	const QString themePathMods = windowsHomePath + "/Mods/Theme";
 
 	QString fileDirLastSaved = windowsHomePath + "/" + savesFolderName;
 	QString fileDirLastOpened = windowsHomePath + "/" + savesFolderName;
