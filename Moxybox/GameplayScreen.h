@@ -38,14 +38,21 @@ private:
 
 	std::unique_ptr<QGraphicsScene> scene = std::make_unique<QGraphicsScene>();
 
+	bool firstTimeSetup = false;
+
+	const QString distributorName = "Robert Jay Myers Apps";
+	const QString windowTitleProgramName = "Moxybox";
 	const QString appExecutablePath = QCoreApplication::applicationDirPath();
-	const QString levelDataPath = appExecutablePath + "/LevelData";
+	const QString windowsHomePath = QDir::homePath() + "/Documents/" + distributorName + "/" + windowTitleProgramName;
+	const QString levelFolderName = "LevelData";
+	const QString savesFolderName = "Saves";
+
+	const QString levelDataPath = appExecutablePath + "/" + levelFolderName;
+	const QString levelDataPathExtra = windowsHomePath + "/" + levelFolderName;
 	const QString levelDataFileExtension = "MoxyLvl";
 
-	QString fileDirLastSaved = appExecutablePath + "/Saves";
-	QString fileDirLastOpened = appExecutablePath + "/Saves";
-
-	const QString winTitleProgramName = "Moxybox";
+	QString fileDirLastSaved = windowsHomePath + "/" + savesFolderName;
+	QString fileDirLastOpened = windowsHomePath + "/" + savesFolderName;
 
 	enum class GameState { TITLE, PLAYING, PAUSED, KEYBINDING, LEVEL_COMPLETE, LEVEL_FAILED, LEVEL_ALL_DONE };
 	GameState gameState = GameState::TITLE;
@@ -653,6 +660,7 @@ private:
 	// FUNCTIONS
 	// -----------
 	void prefLoad();
+	void dirIteratorLoadLevelData(const QString &dirPath);
 	bool hitSolidObjectPlayerMoving();
 	bool hitImmobileObject(const std::vector<tokenImmobile>& immobiles, const int playerNextY, const int playerNextX);
 	bool hitImmobileObjectAndDelete(std::vector<tokenImmobile>& immobiles, const int playerNextY, const int playerNextX);

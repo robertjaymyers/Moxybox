@@ -65,6 +65,16 @@ GameplayScreen::GameplayScreen(QWidget *parent)
 
 	prefLoad();
 
+	if (firstTimeSetup)
+	{
+		QDir dirSaves(windowsHomePath + "/" + savesFolderName);
+		QDir dirLevels(windowsHomePath + "/" + levelFolderName);
+		if (!dirSaves.exists())
+			dirSaves.mkpath(".");
+		if (!dirLevels.exists())
+			dirLevels.mkpath(".");
+	}
+
 	setStyleSheet(styleMap.at("baseStyle"));
 	setAlignment(Qt::AlignTop | Qt::AlignLeft);
 
@@ -356,222 +366,17 @@ GameplayScreen::GameplayScreen(QWidget *parent)
 		scene.get()->addItem(piece.item.get());
 	}
 
+	dirIteratorLoadLevelData(levelDataPath);
 
-	// Get all paths of data files and store them in vectors as strings
-	qDebug() << levelDataPath;
-	QDirIterator dirIt(levelDataPath, QDir::AllEntries | QDir::NoDotAndDotDot);
-	while (dirIt.hasNext())
+	// After loading level data through the main expected area, we also look for any level data coming
+	// from the user's documents/home area. We set this up as an extra area to look for levels, so that
+	// when someone wants to add extra levels to the game beyond the default, they don't have to deal with
+	// the permissions of, for example, the "program files" folder. They can place it in their documents/home
+	// area instead and the game will pick it up.
 	{
-		QString filePath = dirIt.next();
-		qDebug() << filePath;
-
-		if (QFileInfo(filePath).suffix() != levelDataFileExtension)
-			continue;
-
-		QString fileContents;
-		QFile fileRead(filePath);
-		if (fileRead.open(QIODevice::ReadOnly))
-		{
-			bool validLevelFound = true;
-			levelData newLevelData;
-			QTextStream qStream(&fileRead);
-			while (!qStream.atEnd())
-			{
-				QString line = qStream.readLine();
-				if (line.contains("::Id="))
-				{
-					newLevelData.id = extractSubstringInbetweenQt("::Id=", "::", line);
-					newLevelData.creator = extractSubstringInbetweenQt("::CreatorName=", "::", line);
-					newLevelData.name = extractSubstringInbetweenQt("::LevelName=", "::", line);
-					newLevelData.difficulty = extractSubstringInbetweenQt("::LevelDifficulty=", "::", line).toInt();
-					newLevelData.turnsInitial = extractSubstringInbetweenQt("::TurnsRemaining=", "::", line).toInt();
-					newLevelData.turnsRemaining = newLevelData.turnsInitial;
-				}
-				else if (line.contains("::Gate=") && line.contains("::Key="))
-				{
-					// Need checks here to make sure number of Gate and number of Key is the same
-					// Failing checks means NOT a valid level, leave out of level list
-
-					QString gateData = extractSubstringInbetweenQt("::Gate=", "::", line);
-					QString keyData = extractSubstringInbetweenQt("::Key=", "::", line);
-
-					QStringList gateList = extractSubstringInbetweenQtLoopList("(", ")", gateData);
-					QStringList keyList = extractSubstringInbetweenQtLoopList("(", ")", keyData);
-
-					if (gateList.length() != keyList.length())
-						validLevelFound = false;
-
-					for (const auto& gate : gateList)
-					{
-						QStringList coords = gate.split(",", QString::SkipEmptyParts);
-						newLevelData.gates.emplace_back
-						(
-							tokenImmobile
-							{
-								coords[0].toInt(),
-								coords[1].toInt(),
-								tokenImmobile::Type::GATE
-							}
-						);
-					}
-					for (const auto& key : keyList)
-					{
-						QStringList coords = key.split(",", QString::SkipEmptyParts);
-						newLevelData.keys.emplace_back
-						(
-							tokenImmobile
-							{
-								coords[0].toInt(),
-								coords[1].toInt(),
-								tokenImmobile::Type::KEY
-							}
-						);
-					}
-				}
-				else if (line.contains("::Player="))
-				{
-					QStringList coords = extractSubstringInbetweenQt("::Player=", "::", line).split(",", QString::SkipEmptyParts);
-					newLevelData.players.emplace_back
-					(
-						tokenPlayer
-						{
-							coords[0].toInt(),
-							coords[1].toInt()
-						}
-					);
-				}
-				else if (line.contains("::Pusher="))
-				{
-					QString pusherData = extractSubstringInbetweenQt("::Pusher=", "::", line);
-					QStringList pusherList = extractSubstringInbetweenQtLoopList("(", ")", pusherData);
-					for (const auto& pusher : pusherList)
-					{
-						QStringList components = pusher.split(",", QString::SkipEmptyParts);
-						newLevelData.pushers.emplace_back
-						(
-							tokenPatroller
-							{
-								components[0].toInt(),
-								components[1].toInt(),
-								tokenPatroller::typeToEnum(components[2]),
-								tokenPatroller::facingToEnum(components[3]),
-								tokenPatroller::facingToEnum(components[3]),
-								tokenPatroller::patrolDirToEnum(components[4]),
-								components[5].toInt(),
-								components[6].toInt(),
-								components[7].toInt(),
-								components[8].toInt()
-							}
-						);
-					}
-				}
-				else if (line.contains("::Sucker="))
-				{
-					QString suckerData = extractSubstringInbetweenQt("::Sucker=", "::", line);
-					QStringList suckerList = extractSubstringInbetweenQtLoopList("(", ")", suckerData);
-					for (const auto& pusher : suckerList)
-					{
-						QStringList components = pusher.split(",", QString::SkipEmptyParts);
-						newLevelData.suckers.emplace_back
-						(
-							tokenPatroller
-							{
-								components[0].toInt(),
-								components[1].toInt(),
-								tokenPatroller::typeToEnum(components[2]),
-								tokenPatroller::facingToEnum(components[3]),
-								tokenPatroller::facingToEnum(components[3]),
-								tokenPatroller::patrolDirToEnum(components[4]),
-								components[5].toInt(),
-								components[6].toInt(),
-								components[7].toInt(),
-								components[8].toInt()
-							}
-						);
-					}
-				}
-				else if (line.contains("::Util="))
-				{
-					QString utilData = extractSubstringInbetweenQt("::Util=", "::", line);
-					QStringList utilList = extractSubstringInbetweenQtLoopList("(", ")", utilData);
-					for (const auto& util : utilList)
-					{
-						// When loading a level for the first time, utils should always be INACTIVE.
-						// For reusability of code and loading procedures, we look for state regardless.
-						// This way for loading an in-progress level, varying state can be loaded as needed.
-						QStringList components = util.split(",", QString::SkipEmptyParts);
-						newLevelData.utils.emplace_back
-						(
-							tokenUtil
-							{
-								components[0].toInt(),
-								components[1].toInt(),
-								tokenUtil::typeToEnum(components[2]),
-								tokenUtil::stateToEnum(components[3])
-							}
-						);
-					}
-				}
-				else if (line.contains("::Block="))
-				{
-					QString blockData = extractSubstringInbetweenQt("::Block=", "::", line);
-					QStringList blockList = extractSubstringInbetweenQtLoopList("(", ")", blockData);
-					for (const auto& block : blockList)
-					{
-						QStringList coords = block.split(",", QString::SkipEmptyParts);
-						newLevelData.blocks.emplace_back
-						(
-							tokenImmobile
-							{
-								coords[0].toInt(),
-								coords[1].toInt(),
-								tokenImmobile::Type::BLOCK
-							}
-						);
-					}
-				}
-				else if (line.contains("::Hazard="))
-				{
-					QString hazardData = extractSubstringInbetweenQt("::Hazard=", "::", line);
-					QStringList hazardList = extractSubstringInbetweenQtLoopList("(", ")", hazardData);
-					for (const auto& hazard : hazardList)
-					{
-						QStringList coords = hazard.split(",", QString::SkipEmptyParts);
-						newLevelData.hazards.emplace_back
-						(
-							tokenImmobile
-							{
-								coords[0].toInt(),
-								coords[1].toInt(),
-								tokenImmobile::Type::HAZARD
-							}
-						);
-					}
-				}
-				else if (line.contains("::Teleport="))
-				{
-					QString teleportData = extractSubstringInbetweenQt("::Teleport=", "::", line);
-					QStringList teleportList = extractSubstringInbetweenQtLoopList("(", ")", teleportData);
-					for (const auto& teleport : teleportList)
-					{
-						QStringList coords = teleport.split(",", QString::SkipEmptyParts);
-						newLevelData.teleports.emplace_back
-						(
-							tokenImmobile
-							{
-								coords[0].toInt(),
-								coords[1].toInt(),
-								tokenImmobile::Type::TELEPORT
-							}
-						);
-					}
-				}
-			}
-
-			if (validLevelFound)
-				levelsAll.emplace_back(std::move(newLevelData));
-		}
-		fileRead.close();
+		QDir dirLevels(windowsHomePath + "/" + levelFolderName);
+		if (dirLevels.exists())
+			dirIteratorLoadLevelData(levelDataPathExtra);
 	}
 
 	std::sort(levelsAll.begin(), levelsAll.end(), [&](const levelData &lhs, const levelData &rhs) {
@@ -979,6 +784,8 @@ void GameplayScreen::prefSave()
 	{
 		QTextStream qStream(&fileWrite);
 
+		qStream << "firstTimeSetup=false\r\n\r\n";
+
 		qStream << "KEYBINDS: \r\n";
 		for (const auto& k : keybindMap)
 		{
@@ -1008,6 +815,15 @@ void GameplayScreen::prefLoad()
 		{
 			QString line = qStream.readLine();
 
+			if (line.contains("firstTimeSetup="))
+			{
+				QString extracted = extractSubstringInbetweenQt("=", "", line);
+				if (extracted == "true" || extracted == "false")
+				{
+					firstTimeSetup = QVariant(extracted).toBool();
+				}
+			}
+
 			for (auto& k : keybindMap)
 			{
 				QString identifier = k.second.labelText;
@@ -1019,6 +835,226 @@ void GameplayScreen::prefLoad()
 					continue;
 				}
 			}
+		}
+		fileRead.close();
+	}
+}
+
+void GameplayScreen::dirIteratorLoadLevelData(const QString &dirPath)
+{
+	// Get all paths of data files and store them in vectors as strings
+	qDebug() << dirPath;
+	QDirIterator dirIt(dirPath, QDir::AllEntries | QDir::NoDotAndDotDot);
+	while (dirIt.hasNext())
+	{
+		QString filePath = dirIt.next();
+		qDebug() << filePath;
+
+		if (QFileInfo(filePath).suffix() != levelDataFileExtension)
+			continue;
+
+		QString fileContents;
+		QFile fileRead(filePath);
+		if (fileRead.open(QIODevice::ReadOnly))
+		{
+			bool validLevelFound = true;
+			levelData newLevelData;
+			QTextStream qStream(&fileRead);
+			while (!qStream.atEnd())
+			{
+				QString line = qStream.readLine();
+				if (line.contains("::Id="))
+				{
+					newLevelData.id = extractSubstringInbetweenQt("::Id=", "::", line);
+					newLevelData.creator = extractSubstringInbetweenQt("::CreatorName=", "::", line);
+					newLevelData.name = extractSubstringInbetweenQt("::LevelName=", "::", line);
+					newLevelData.difficulty = extractSubstringInbetweenQt("::LevelDifficulty=", "::", line).toInt();
+					newLevelData.turnsInitial = extractSubstringInbetweenQt("::TurnsRemaining=", "::", line).toInt();
+					newLevelData.turnsRemaining = newLevelData.turnsInitial;
+				}
+				else if (line.contains("::Gate=") && line.contains("::Key="))
+				{
+					// Need checks here to make sure number of Gate and number of Key is the same
+					// Failing checks means NOT a valid level, leave out of level list
+
+					QString gateData = extractSubstringInbetweenQt("::Gate=", "::", line);
+					QString keyData = extractSubstringInbetweenQt("::Key=", "::", line);
+
+					QStringList gateList = extractSubstringInbetweenQtLoopList("(", ")", gateData);
+					QStringList keyList = extractSubstringInbetweenQtLoopList("(", ")", keyData);
+
+					if (gateList.length() != keyList.length())
+						validLevelFound = false;
+
+					for (const auto& gate : gateList)
+					{
+						QStringList coords = gate.split(",", QString::SkipEmptyParts);
+						newLevelData.gates.emplace_back
+						(
+							tokenImmobile
+							{
+								coords[0].toInt(),
+								coords[1].toInt(),
+								tokenImmobile::Type::GATE
+							}
+						);
+					}
+					for (const auto& key : keyList)
+					{
+						QStringList coords = key.split(",", QString::SkipEmptyParts);
+						newLevelData.keys.emplace_back
+						(
+							tokenImmobile
+							{
+								coords[0].toInt(),
+								coords[1].toInt(),
+								tokenImmobile::Type::KEY
+							}
+						);
+					}
+				}
+				else if (line.contains("::Player="))
+				{
+					QStringList coords = extractSubstringInbetweenQt("::Player=", "::", line).split(",", QString::SkipEmptyParts);
+					newLevelData.players.emplace_back
+					(
+						tokenPlayer
+						{
+							coords[0].toInt(),
+							coords[1].toInt()
+						}
+					);
+				}
+				else if (line.contains("::Pusher="))
+				{
+					QString pusherData = extractSubstringInbetweenQt("::Pusher=", "::", line);
+					QStringList pusherList = extractSubstringInbetweenQtLoopList("(", ")", pusherData);
+					for (const auto& pusher : pusherList)
+					{
+						QStringList components = pusher.split(",", QString::SkipEmptyParts);
+						newLevelData.pushers.emplace_back
+						(
+							tokenPatroller
+							{
+								components[0].toInt(),
+								components[1].toInt(),
+								tokenPatroller::typeToEnum(components[2]),
+								tokenPatroller::facingToEnum(components[3]),
+								tokenPatroller::facingToEnum(components[3]),
+								tokenPatroller::patrolDirToEnum(components[4]),
+								components[5].toInt(),
+								components[6].toInt(),
+								components[7].toInt(),
+								components[8].toInt()
+							}
+						);
+					}
+				}
+				else if (line.contains("::Sucker="))
+				{
+					QString suckerData = extractSubstringInbetweenQt("::Sucker=", "::", line);
+					QStringList suckerList = extractSubstringInbetweenQtLoopList("(", ")", suckerData);
+					for (const auto& pusher : suckerList)
+					{
+						QStringList components = pusher.split(",", QString::SkipEmptyParts);
+						newLevelData.suckers.emplace_back
+						(
+							tokenPatroller
+							{
+								components[0].toInt(),
+								components[1].toInt(),
+								tokenPatroller::typeToEnum(components[2]),
+								tokenPatroller::facingToEnum(components[3]),
+								tokenPatroller::facingToEnum(components[3]),
+								tokenPatroller::patrolDirToEnum(components[4]),
+								components[5].toInt(),
+								components[6].toInt(),
+								components[7].toInt(),
+								components[8].toInt()
+							}
+						);
+					}
+				}
+				else if (line.contains("::Util="))
+				{
+					QString utilData = extractSubstringInbetweenQt("::Util=", "::", line);
+					QStringList utilList = extractSubstringInbetweenQtLoopList("(", ")", utilData);
+					for (const auto& util : utilList)
+					{
+						// When loading a level for the first time, utils should always be INACTIVE.
+						// For reusability of code and loading procedures, we look for state regardless.
+						// This way for loading an in-progress level, varying state can be loaded as needed.
+						QStringList components = util.split(",", QString::SkipEmptyParts);
+						newLevelData.utils.emplace_back
+						(
+							tokenUtil
+							{
+								components[0].toInt(),
+								components[1].toInt(),
+								tokenUtil::typeToEnum(components[2]),
+								tokenUtil::stateToEnum(components[3])
+							}
+						);
+					}
+				}
+				else if (line.contains("::Block="))
+				{
+					QString blockData = extractSubstringInbetweenQt("::Block=", "::", line);
+					QStringList blockList = extractSubstringInbetweenQtLoopList("(", ")", blockData);
+					for (const auto& block : blockList)
+					{
+						QStringList coords = block.split(",", QString::SkipEmptyParts);
+						newLevelData.blocks.emplace_back
+						(
+							tokenImmobile
+							{
+								coords[0].toInt(),
+								coords[1].toInt(),
+								tokenImmobile::Type::BLOCK
+							}
+						);
+					}
+				}
+				else if (line.contains("::Hazard="))
+				{
+					QString hazardData = extractSubstringInbetweenQt("::Hazard=", "::", line);
+					QStringList hazardList = extractSubstringInbetweenQtLoopList("(", ")", hazardData);
+					for (const auto& hazard : hazardList)
+					{
+						QStringList coords = hazard.split(",", QString::SkipEmptyParts);
+						newLevelData.hazards.emplace_back
+						(
+							tokenImmobile
+							{
+								coords[0].toInt(),
+								coords[1].toInt(),
+								tokenImmobile::Type::HAZARD
+							}
+						);
+					}
+				}
+				else if (line.contains("::Teleport="))
+				{
+					QString teleportData = extractSubstringInbetweenQt("::Teleport=", "::", line);
+					QStringList teleportList = extractSubstringInbetweenQtLoopList("(", ")", teleportData);
+					for (const auto& teleport : teleportList)
+					{
+						QStringList coords = teleport.split(",", QString::SkipEmptyParts);
+						newLevelData.teleports.emplace_back
+						(
+							tokenImmobile
+							{
+								coords[0].toInt(),
+								coords[1].toInt(),
+								tokenImmobile::Type::TELEPORT
+							}
+						);
+					}
+				}
+			}
+
+			if (validLevelFound)
+				levelsAll.emplace_back(std::move(newLevelData));
 		}
 		fileRead.close();
 	}
@@ -2765,7 +2801,7 @@ void GameplayScreen::updateWindowTitle()
 {
 	this->parentWidget()->parentWidget()->setWindowTitle
 	(
-		winTitleProgramName + " - Current Level: " + levelsAll[levelCurrent].name + " by " + levelsAll[levelCurrent].creator
+		windowTitleProgramName + " - Current Level: " + levelsAll[levelCurrent].name + " by " + levelsAll[levelCurrent].creator
 	);
 }
 
