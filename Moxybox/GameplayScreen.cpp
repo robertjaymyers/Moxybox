@@ -779,12 +779,10 @@ void GameplayScreen::keyReleaseEvent(QKeyEvent *event)
 
 void GameplayScreen::prefSave()
 {
-	QFile fileWrite(appExecutablePath + "/config.txt");
+	QFile fileWrite(windowsHomePath + "/config.txt");
 	if (fileWrite.open(QIODevice::WriteOnly))
 	{
 		QTextStream qStream(&fileWrite);
-
-		qStream << "firstTimeSetup=false\r\n\r\n";
 
 		qStream << "KEYBINDS: \r\n";
 		for (const auto& k : keybindMap)
@@ -807,22 +805,21 @@ void GameplayScreen::prefSave()
 
 void GameplayScreen::prefLoad()
 {
-	QFile fileRead(appExecutablePath + "/config.txt");
+	// If the config file exists in the home path we assume first time setup has happened.
+	// Otherwise, we assume it hasn't and run first time setup to generate home path folders/files.
+	const QString configPath = windowsHomePath + "/config.txt";
+	if (!QFile(configPath).exists())
+		return;
+	else
+		firstTimeSetup = false;
+
+	QFile fileRead(configPath);
 	if (fileRead.open(QIODevice::ReadOnly))
 	{
 		QTextStream qStream(&fileRead);
 		while (!qStream.atEnd())
 		{
 			QString line = qStream.readLine();
-
-			if (line.contains("firstTimeSetup="))
-			{
-				QString extracted = extractSubstringInbetweenQt("=", "", line);
-				if (extracted == "true" || extracted == "false")
-				{
-					firstTimeSetup = QVariant(extracted).toBool();
-				}
-			}
 
 			for (auto& k : keybindMap)
 			{
