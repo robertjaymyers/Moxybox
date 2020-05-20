@@ -1,3 +1,17 @@
+/*
+This file is part of Moxybox.
+	Moxybox is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	Moxybox is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	You should have received a copy of the GNU General Public License
+	along with Moxybox.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "GameplayScreen.h"
 
 GameplayScreen::GameplayScreen(QWidget *parent)
@@ -3118,7 +3132,7 @@ void GameplayScreen::modLoadThemeIfExists()
 					// QString allows us to do a simple replace operation based on presence of %1.
 					// If we were to have more than one kind of replacement we need to do, we can set up %2, %3, etc.
 					if (line.contains("%1"))
-						style.second = extractSubstringInbetweenQt(identifier, "::::", line).arg(appExecutablePath);
+						style.second = extractSubstringInbetweenQt(identifier, "::::", line).arg(windowsHomePath);
 					else
 						style.second = extractSubstringInbetweenQt(identifier, "::::", line);
 					continue;
@@ -3130,7 +3144,7 @@ void GameplayScreen::modLoadThemeIfExists()
 				QString identifier = "::" + img.first + "=";
 				if (line.contains(identifier))
 				{
-					img.second = QPixmap(appExecutablePath + extractSubstringInbetweenQt(identifier, "::", line));
+					img.second = QPixmap(windowsHomePath + extractSubstringInbetweenQt(identifier, "::", line));
 					continue;
 				}
 			}
